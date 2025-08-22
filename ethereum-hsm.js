@@ -38,8 +38,11 @@ export function getEthereumKeyPair(session) {
     console.log("No Ethereum key pair found. Will use the HSM to create a new one...");
 
     // Generate EC key pair for Ethereum (secp256k1 curve)
-    // Use only the basic attributes that graphene-pk11 supports
-    return session.generateKeyPair(graphene.KeyGenMechanism.EC, {
+    // Try to use the mechanism parameters to specify the curve
+    const mechanism = graphene.Mechanism.EC;
+    mechanism.parameter = Buffer.from('06052B8104000A', 'hex'); // OID for secp256k1
+    
+    return session.generateKeyPair(mechanism, {
         keyType: graphene.KeyType.EC,
         token: true,
         verify: true,
