@@ -159,7 +159,7 @@ export function deriveEthereumAddress(publicKey) {
     const keyBytes = rawPoint.slice(1);
 
     // 4. Hash with Keccak-256
-    const hash = keccak256(keyBytes);
+    const hash = keccak256('keccak256').update(keyBytes).digest();
 
     // 5. Last 20 bytes → Ethereum address
     return "0x" + hash.slice(-20).toString("hex");
