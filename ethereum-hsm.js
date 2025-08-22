@@ -8,7 +8,7 @@ const { secp256k1 } = secp256k1Pkg;
 graphene.registerAttribute("ecParams", 0x1806, "buffer");
 graphene.registerAttribute("unwrapTemplate", 0x4000021, "template");
 graphene.registerAttribute("wrapTemplate", 0x4000020, "template");
-
+graphene.registerAttribute("ecPoint", 0x180);
 // Initializes the cloud HSM and returns a module object
 export function initHSM() {
     const Module = graphene.Module;
@@ -134,26 +134,30 @@ export function getEthereumKeyPair(session) {
 
 // Derive Ethereum address from public key
 export function deriveEthereumAddress(publicKey) {
-    // 1. Extract the EC point
-    const ecPoint = publicKey.getAttribute({ ecPoint: null }).ecPoint;
+    // 1. Extract EC point from HSM
+    const ecPoint = publicKey.getAttribute("ecPoint");
 
     // 2. Decode ASN.1 OCTET STRING
-    const rawPoint = decodeEcPoint(ecPoint); // should be 65 bytes: 0x04 + X(32) + Y(32)
+    const rawPoint = decodeEcPoint(ecPoint); // [0x04 || X || Y]
 
     if (rawPoint[0] !== 0x04) {
         throw new Error("Only uncompressed EC points are supported");
     }
 
-    // 3. Drop the prefix 0x04
+    // 3. Drop 0x04 prefix
     const keyBytes = rawPoint.slice(1);
 
     // 4. Hash with Keccak-256
     const hash = keccak256(keyBytes);
 
-    // 5. Take the last 20 bytes
-    const address = "0x" + hash.slice(-20).toString("hex");
+    // 5. Last 20 bytes → Ethereum address
+    return "0x" + hash.slice(-20).toString("hex");
+}
 
-    return address;
+function decodeEcPoint(ecPointBuffer) {
+    if (ecPointBuffer[0] !== 0x04) throw new Error("Expected OCTET STRING");
+    const len = ecPointBuffer[1];
+    return ecPointBuffer.slice(2, 2 + len);
 }
 // Sign Ethereum message using HSM
 export function signEthereumMessage(session, privateKey, message) {
