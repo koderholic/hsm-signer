@@ -57,27 +57,34 @@ export function getEthereumKeyPair(session) {
     console.log("No Ethereum key pair found. Will use the HSM to create a new one...");
 
         // 3. Generate new key pair using secp256k1
+        
     const publicKeyTemplate = {
         class: graphene.ObjectClass.PUBLIC_KEY,
         keyType: graphene.KeyType.EC,
-        token: true,
-        label: KEY_LABEL,
-        id: Buffer.from(KEY_ID),
-        verify: true,
-        ecParams: Buffer.from("06052b8104000a", "hex") // secp256k1 OID
-    };
+        ecParams: Buffer.from("06052b8104000a", "hex"), // secp256k1 OID
+    }
+
+    //   const publicKeyTemplate = {
+    //     class: graphene.ObjectClass.PUBLIC_KEY,
+    //     keyType: graphene.KeyType.EC,
+    //     token: true,
+    //     label: KEY_LABEL,
+    //     id: Buffer.from(KEY_ID),
+    //     verify: true,
+    //     ecParams: Buffer.from("06052b8104000a", "hex") // secp256k1 OID
+    // };
 
     console.log("Came here")
 
     const privateKeyTemplate = {
         class: graphene.ObjectClass.PRIVATE_KEY,
         keyType: graphene.KeyType.EC,
-        token: true,
-        label: KEY_LABEL,
-        id: Buffer.from(KEY_ID),
-        sign: true,
-        extractable: false,
-        sensitive: true
+        // token: true,
+        // label: KEY_LABEL,
+        // id: Buffer.from(KEY_ID),
+        // sign: true,
+        // extractable: false,
+        // sensitive: true
     };
 
     console.log("Got here")
