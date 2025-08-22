@@ -4,6 +4,9 @@ const { keccak256 } = pkg;
 import secp256k1Pkg from "secp256k1";
 const { secp256k1 } = secp256k1Pkg;
 
+// Register ecParams (CKA_EC_PARAMS = 0x1806)
+graphene.registerAttribute("ecParams", 0x1806, "buffer");
+
 // Initializes the cloud HSM and returns a module object
 export function initHSM() {
     const Module = graphene.Module;
