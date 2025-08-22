@@ -178,8 +178,23 @@ export function signEthereumMessage(session, privateKey, message) {
     // Hash the personal message
     const messageHash = keccak256('keccak256').update(Buffer.from(personalMessage, 'utf8')).digest();
     
-    // Sign the hash using HSM
-    const signer = session.createSign(graphene.Mechanism.ECDSA, privateKey);
+    // var sign = session.createSign("ECDSA_SHA256", privateKey);
+    // sign.update("simple text 1");
+    // sign.update("simple text 2");
+    // var signature = sign.final();
+
+    // Sign the hash using HSM - try different ECDSA mechanisms
+    let signer;
+    try {
+        signer = session.createSign(graphene.Mechanism.ECDSA_SHA256, privateKey);
+    } catch (e) {
+        try {
+            signer = session.createSign(graphene.Mechanism.ECDSA, privateKey);
+        } catch (e2) {
+            // Use a basic mechanism object
+            signer = session.createSign({ name: 'ECDSA' }, privateKey);
+        }
+    }
     const signature = signer.once(messageHash);
     
     // Convert signature to DER format and extract r, s values
