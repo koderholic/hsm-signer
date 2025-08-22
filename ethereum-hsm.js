@@ -3,7 +3,6 @@ import pkg from 'keccak';
 const { keccak256 } = pkg;
 import secp256k1Pkg from "secp256k1";
 const { secp256k1 } = secp256k1Pkg;
-import graphene from "graphene-pk11";
 
 // Initializes the cloud HSM and returns a module object
 export function initHSM() {
