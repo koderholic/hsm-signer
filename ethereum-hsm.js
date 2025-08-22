@@ -2,6 +2,12 @@ import graphene from "graphene-pk11";
 import keccak256 from 'keccak';
 import secp256k1Pkg from "secp256k1";
 const { secp256k1 } = secp256k1Pkg;
+import {
+    ecrecover,
+    fromRpcSig,
+    keccak256 as etherKeccak,
+    toBuffer
+  } from 'ethereumjs-util';
 
 // Register ecParams (CKA_EC_PARAMS = 0x1806)
 graphene.registerAttribute("ecParams", 0x1806, "buffer");
@@ -271,23 +277,26 @@ function parseDERSignature(derSignature) {
 // Verify Ethereum signature
 export function verifyEthereumSignature(message, signature, expectedAddress) {
     try {
-        const personalMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
-        const messageHash = keccak256('keccak256').update(Buffer.from(personalMessage, 'utf8')).digest();
-        
-        // Extract r, s, v from signature
-        const r = Buffer.from(signature.slice(2, 66), 'hex');
-        const s = Buffer.from(signature.slice(66, 130), 'hex');
-        const v = parseInt(signature.slice(130, 132), 'hex');
-        
-        // Recover public key
-        const publicKey = secp256k1.recover(messageHash, { r, s, v }, false);
-        
-        // Derive address from recovered public key
-        const recoveredAddress = deriveEthereumAddress({ getAttribute: () => publicKey });
-        
-        return recoveredAddress.toLowerCase() === expectedAddress.toLowerCase();
+      const messageBuffer = toBuffer(message);
+      const messageHash = etherKeccak(
+        Buffer.concat([
+          Buffer.from("\x19Ethereum Signed Message:\n" + messageBuffer.length.toString(), 'utf-8'),
+          messageBuffer
+        ])
+      );
+      
+      // Parse the signature string into r, s, and v
+      const sig = fromRpcSig(signature);
+      
+      // Recover public key from message hash and signature components
+      const publicKey = ecrecover(messageHash, sig.v, sig.r, sig.s);
+      
+      // Derive address from recovered public key
+      const recoveredAddress = '0x' + etherKeccak(publicKey).toString('hex').slice(-40);
+      
+      return recoveredAddress.toLowerCase() === expectedAddress.toLowerCase();
     } catch (error) {
-        console.error('Signature verification failed:', error);
-        return false;
+      console.error('Signature verification failed:', error);
+      return false;
     }
-}
+  }
