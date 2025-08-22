@@ -53,7 +53,7 @@ export function getEthereumKeyPair(session) {
 
     console.log("No Ethereum key pair found. Will use the HSM to create a new one...");
 
-    // 2. Define templates with all required attributes and common ID/Label
+        // 3. Generate new key pair using secp256k1
     const publicKeyTemplate = {
         class: graphene.ObjectClass.PUBLIC_KEY,
         keyType: graphene.KeyType.EC,
@@ -61,7 +61,7 @@ export function getEthereumKeyPair(session) {
         label: KEY_LABEL,
         id: Buffer.from(KEY_ID),
         verify: true,
-        extractable: true,
+        ecParams: Buffer.from("06052b8104000a", "hex") // secp256k1 OID
     };
 
     console.log("Came here")
@@ -73,22 +73,22 @@ export function getEthereumKeyPair(session) {
         label: KEY_LABEL,
         id: Buffer.from(KEY_ID),
         sign: true,
-        extractable: false, // Private key should never be extractable
-        sensitive: true, // Mark private key as sensitive
+        extractable: false,
+        sensitive: true
     };
 
     console.log("Got here")
 
-    // 3. Use the correct graphene-pk11 mechanism
-    const mechanism = graphene.Mechanism.EC;
-    // Set the parameter for secp256k1 curve
-    mechanism.parameter = Buffer.from('06052B8104000A', 'hex');
-
-    return session.generateKeyPair(
-        mechanism,
+    const keyPair = session.generateKeyPair(
+        graphene.MechanismEnum.EC_KEY_PAIR_GEN,
         publicKeyTemplate,
-        privateKeyTemplate,
+        privateKeyTemplate
     );
+
+    console.log("Reached here")
+
+    return keyPair;
+
 }
 
 // Derive Ethereum address from public key
