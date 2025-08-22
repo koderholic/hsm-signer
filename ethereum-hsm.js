@@ -3,10 +3,7 @@ import pkg from 'keccak';
 const { keccak256 } = pkg;
 import secp256k1Pkg from "secp256k1";
 const { secp256k1 } = secp256k1Pkg;
-import {
-    MechanismEnum,
-    ECParams
-} from "graphene-pk11";
+import graphene from "graphene-pk11";
 
 // Initializes the cloud HSM and returns a module object
 export function initHSM() {
@@ -83,20 +80,10 @@ export function getEthereumKeyPair(session) {
 
     console.log("Got here")
 
-    // 3. Correctly define the mechanism with the curve OID
-    // const mechanism = {
-    //     name: MechanismEnum.EC_KEY_PAIR_GEN,
-    //     params: {
-    //         // OID for secp256k1
-    //         ecParams: Buffer.from('06052B8104000A', 'hex'),
-    //     }
-    // };
-    const ecParams = new ECParams(Buffer.from('06052B8104000A', 'hex'));
-
-    const mechanism = {
-        name: MechanismEnum.EC_KEY_PAIR_GEN,
-        params: ecParams
-    };
+    // 3. Use the correct graphene-pk11 mechanism
+    const mechanism = graphene.Mechanism.EC;
+    // Set the parameter for secp256k1 curve
+    mechanism.parameter = Buffer.from('06052B8104000A', 'hex');
 
     return session.generateKeyPair(
         mechanism,
