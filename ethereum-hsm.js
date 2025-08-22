@@ -92,7 +92,7 @@ export function getEthereumKeyPair(session) {
         sign: true,
         extractable: false,
         unwrap: false,
-        sensitive: true,
+        // sensitive: true,
         // unwrapTemplate: [
         //     {
         //         type: sensitive, value: true,
