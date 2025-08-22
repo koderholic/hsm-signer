@@ -123,7 +123,7 @@ export function getEthereumKeyPair(session) {
             id: Buffer.from(KEY_ID),
             token: false,
             verify: true,
-            derive: true,
+            // derive: true,
             paramsECDSA: graphene.NamedCurve.getByName("secp256k1").value,
             // private: false
         }, {
