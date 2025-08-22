@@ -67,6 +67,8 @@ export function getEthereumKeyPair(session) {
         extractable: true,
     };
 
+    console.log("Came here")
+
     const privateKeyTemplate = {
         class: graphene.ObjectClass.PRIVATE_KEY,
         keyType: graphene.KeyType.EC,
@@ -77,6 +79,8 @@ export function getEthereumKeyPair(session) {
         extractable: false, // Private key should never be extractable
         sensitive: true, // Mark private key as sensitive
     };
+
+    console.log("Got here")
 
     // 3. Correctly define the mechanism with the curve OID
     const mechanism = {
