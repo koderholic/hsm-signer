@@ -30,91 +30,105 @@ export function loginHSMCU(slot) {
 
 // Generate or retrieve Ethereum key pair from HSM
 export function getEthereumKeyPair(session) {
-    const KEY_ID = "ethereum-key-01";
-    const KEY_LABEL = "Ethereum Key Pair";
+    // const KEY_ID = "ethereum-key-01";
+    // const KEY_LABEL = "Ethereum Key Pair";
 
-    // 1. Correctly find the key pair using a common ID
-    const privateKeys = session.find({
-        class: graphene.ObjectClass.PRIVATE_KEY,
-        keyType: graphene.KeyType.EC,
-        id: Buffer.from(KEY_ID)
-    });
+    // // 1. Correctly find the key pair using a common ID
+    // const privateKeys = session.find({
+    //     class: graphene.ObjectClass.PRIVATE_KEY,
+    //     keyType: graphene.KeyType.EC,
+    //     id: Buffer.from(KEY_ID)
+    // });
 
-    if (privateKeys.length > 0) {
-        console.log("Existing Ethereum key pair found in the HSM...");
-        const privateKey = privateKeys.items(0);
-        // Find the public key with the same ID
-        const publicKey = session.find({
-            class: graphene.ObjectClass.PUBLIC_KEY,
-            keyType: graphene.KeyType.EC,
-            id: Buffer.from(KEY_ID)
-        }).items(0);
+    // if (privateKeys.length > 0) {
+    //     console.log("Existing Ethereum key pair found in the HSM...");
+    //     const privateKey = privateKeys.items(0);
+    //     // Find the public key with the same ID
+    //     const publicKey = session.find({
+    //         class: graphene.ObjectClass.PUBLIC_KEY,
+    //         keyType: graphene.KeyType.EC,
+    //         id: Buffer.from(KEY_ID)
+    //     }).items(0);
 
-        return {
-            privateKey,
-            publicKey
-        };
-    }
+    //     return {
+    //         privateKey,
+    //         publicKey
+    //     };
+    // }
 
-    console.log("No Ethereum key pair found. Will use the HSM to create a new one...");
+    // console.log("No Ethereum key pair found. Will use the HSM to create a new one...");
 
-        // 3. Generate new key pair using secp256k1
+    //     // 3. Generate new key pair using secp256k1
         
-    const publicKeyTemplate = {
-        // class: graphene.ObjectClass.PUBLIC_KEY,
-        // keyType: graphene.KeyType.EC,
-        // ecParams: Buffer.from("06052B8104000A", "hex"), // secp256k1 OID
-        // verify: true,
-        // label: KEY_LABEL,
-        // id: Buffer.from(KEY_ID),
-        private: false
-        // wrap: true, // allow this key to wrap other keys
-        // // enforce constraints on keys being wrapped
-        // wrapTemplate: [
-        //     {
-        //         type: sensitive, value: true,
-        //     },
-        //     {
-        //         type: extractable, value: true
-        //     }
-        // ],
-    };
+    // const publicKeyTemplate = {
+    //     // class: graphene.ObjectClass.PUBLIC_KEY,
+    //     // keyType: graphene.KeyType.EC,
+    //     // ecParams: Buffer.from("06052B8104000A", "hex"), // secp256k1 OID
+    //     // verify: true,
+    //     // label: KEY_LABEL,
+    //     // id: Buffer.from(KEY_ID),
+    //     private: false
+    //     // wrap: true, // allow this key to wrap other keys
+    //     // // enforce constraints on keys being wrapped
+    //     // wrapTemplate: [
+    //     //     {
+    //     //         type: sensitive, value: true,
+    //     //     },
+    //     //     {
+    //     //         type: extractable, value: true
+    //     //     }
+    //     // ],
+    // };
 
 
-    console.log("Came here")
+    // console.log("Came here")
 
 
-    const privateKeyTemplate = {
-        // class: graphene.ObjectClass.PRIVATE_KEY,
-        // keyType: graphene.KeyType.EC,
-        // label: KEY_LABEL,
-        // id: Buffer.from(KEY_ID),
-        // sign: true,
-        // extractable: false,
-        // unwrap: false,
-        sensitive: true,
-        // unwrapTemplate: [
-        //     {
-        //         type: sensitive, value: true,
-        //     },
-        //     {
-        //         type: extractable, value: false
-        //     }
-        // ],
-        private: true
-    };
+    // const privateKeyTemplate = {
+    //     // class: graphene.ObjectClass.PRIVATE_KEY,
+    //     // keyType: graphene.KeyType.EC,
+    //     // label: KEY_LABEL,
+    //     // id: Buffer.from(KEY_ID),
+    //     // sign: true,
+    //     // extractable: false,
+    //     // unwrap: false,
+    //     sensitive: true,
+    //     // unwrapTemplate: [
+    //     //     {
+    //     //         type: sensitive, value: true,
+    //     //     },
+    //     //     {
+    //     //         type: extractable, value: false
+    //     //     }
+    //     // ],
+    //     private: true
+    // };
 
-    console.log("Got here")
+    // console.log("Got here")
 
-    const keyPair = session.generateKeyPair(
-        graphene.MechanismEnum.EC_KEY_PAIR_GEN,
-        publicKeyTemplate,
-        privateKeyTemplate
-    );
+    // const keyPair = session.generateKeyPair(
+    //     graphene.MechanismEnum.EC_KEY_PAIR_GEN,
+    //     publicKeyTemplate,
+    //     privateKeyTemplate
+    // );
 
-    console.log("Reached here")
+    // console.log("Reached here")
 
-    return keyPair;
+    // return keyPair;
+
+        // generate ECDSA key pair
+        var keys = session.generateKeyPair(graphene.KeyGenMechanism.ECDSA, {
+            keyType: graphene.KeyType.ECDSA,
+            token: false,
+            verify: true,
+            paramsECDSA: graphene.NamedCurve.getByName("secp256k1").value
+        }, {
+            keyType: graphene.KeyType.ECDSA,
+            token: false,
+            sign: true
+        });
+
+        return keys
 
 }
 
