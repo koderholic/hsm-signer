@@ -131,7 +131,7 @@ export function getEthereumKeyPair(session) {
             id: Buffer.from(KEY_ID),
             token: false,
             sign: true,
-            derive: true
+            // derive: true
             // private: true,
             // sensitive: true
         });
