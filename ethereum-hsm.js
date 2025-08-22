@@ -146,7 +146,7 @@ export function getEthereumKeyPair(session) {
 export function deriveEthereumAddress(publicKey) {
 
      // get public key attributes
-     var pubKey = keys.publicKey.getAttribute({
+     var pubKey = publicKey.getAttribute({
         modulus: null,
         publicExponent: null
     });
