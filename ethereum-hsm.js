@@ -1,6 +1,7 @@
 import graphene from "graphene-pk11";
 import keccak256 from 'keccak';
-import secp256k1 from "secp256k1";
+import secp256k1Pkg from "secp256k1";
+const { secp256k1 } = secp256k1Pkg;
 
 // Register ecParams (CKA_EC_PARAMS = 0x1806)
 graphene.registerAttribute("ecParams", 0x1806, "buffer");
@@ -209,13 +210,30 @@ export function signEthereumMessage(session, privateKey, message) {
     
     // Try to recover the public key and see if it matches
     try {
-        const recoveredPubKey = secp256k1.recover(messageHash, { r, s, v: v - 27 }, false);
+        // Check what functions are available in secp256k1
+        console.log('Available secp256k1 functions:', Object.keys(secp256k1));
+        
+        // Try different function names that might exist
+        let recoveredPubKey;
+        if (secp256k1.recover) {
+            recoveredPubKey = secp256k1.recover(messageHash, { r, s, v: v - 27 }, false);
+        } else if (secp256k1.recoverPublicKey) {
+            recoveredPubKey = secp256k1.recoverPublicKey(messageHash, { r, s, v: v - 27 }, false);
+        } else if (secp256k1.ecdsaRecover) {
+            recoveredPubKey = secp256k1.ecdsaRecover(messageHash, { r, s, v: v - 27 }, false);
+        } else {
+            console.log('No recovery function found in secp256k1');
+            v = 28;
+            return;
+        }
+        
         const recoveredAddress = deriveEthereumAddress({ getAttribute: () => recoveredPubKey });
         // If this doesn't match, try v = 28
         if (!recoveredAddress) {
             v = 28;
         }
     } catch (e) {
+        console.log('Recovery error:', e);
         v = 28;
     }
     
