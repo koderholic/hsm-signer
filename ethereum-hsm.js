@@ -146,7 +146,8 @@ export function getEthereumKeyPair(session) {
 export function deriveEthereumAddress(publicKey) {
  
     // 1. Extract EC point from HSM
-    const ecPoint = publicKey.getAttribute("ecPoint");
+    const ecPoint =  publicKey.getAttribute({pointEC: null}).pointEC
+    // const ecPoint = publicKey.getAttribute("ecPoint");
 
     // 2. Decode ASN.1 OCTET STRING
     const rawPoint = decodeEcPoint(ecPoint); // [0x04 || X || Y]
