@@ -291,7 +291,9 @@ export function verifyEthereumSignature(message, signature, expectedAddress) {
       
       // Derive address
       const recoveredAddress = '0x' + etherKeccak(publicKey).toString('hex').slice(-40);
-      
+      console.log("recoveredAddress => ", recoveredAddress)
+      console.log("expectedAddress => ", expectedAddress)
+
       return recoveredAddress.toLowerCase() === expectedAddress.toLowerCase();
     } catch (error) {
       console.error('Signature verification failed:', error);
