@@ -3,6 +3,9 @@ import pkg from 'keccak';
 const { keccak256 } = pkg;
 import secp256k1Pkg from "secp256k1";
 const { secp256k1 } = secp256k1Pkg;
+import {
+    MechanismEnum
+} from "graphene-pk11";
 
 // Initializes the cloud HSM and returns a module object
 export function initHSM() {
@@ -25,34 +28,70 @@ export function loginHSMCU(slot) {
 
 // Generate or retrieve Ethereum key pair from HSM
 export function getEthereumKeyPair(session) {
-    const privateKeys = session.find({ class: graphene.ObjectClass.PRIVATE_KEY, keyType: graphene.KeyType.EC });
+    const KEY_ID = "ethereum-key-01";
+    const KEY_LABEL = "Ethereum Key Pair";
+
+    // 1. Correctly find the key pair using a common ID
+    const privateKeys = session.find({
+        class: graphene.ObjectClass.PRIVATE_KEY,
+        keyType: graphene.KeyType.EC,
+        id: Buffer.from(KEY_ID)
+    });
 
     if (privateKeys.length > 0) {
-        console.log("Existing Ethereum private key found in the HSM...");
+        console.log("Existing Ethereum key pair found in the HSM...");
         const privateKey = privateKeys.items(0);
-        const publicKey = session.find({ class: graphene.ObjectClass.PUBLIC_KEY, keyType: graphene.KeyType.EC }).items(0);
+        // Find the public key with the same ID
+        const publicKey = session.find({
+            class: graphene.ObjectClass.PUBLIC_KEY,
+            keyType: graphene.KeyType.EC,
+            id: Buffer.from(KEY_ID)
+        }).items(0);
 
-        return { privateKey, publicKey };
+        return {
+            privateKey,
+            publicKey
+        };
     }
 
     console.log("No Ethereum key pair found. Will use the HSM to create a new one...");
 
-    // Generate EC key pair for Ethereum (secp256k1 curve)
-    // Try to use the mechanism parameters to specify the curve
-    const mechanism = graphene.Mechanism.EC;
-    mechanism.parameter = Buffer.from('06052B8104000A', 'hex'); // OID for secp256k1
-    
-    return session.generateKeyPair(mechanism, {
+    // 2. Define templates with all required attributes and common ID/Label
+    const publicKeyTemplate = {
+        class: graphene.ObjectClass.PUBLIC_KEY,
         keyType: graphene.KeyType.EC,
         token: true,
+        label: KEY_LABEL,
+        id: Buffer.from(KEY_ID),
         verify: true,
         extractable: true,
-    }, {
+    };
+
+    const privateKeyTemplate = {
+        class: graphene.ObjectClass.PRIVATE_KEY,
         keyType: graphene.KeyType.EC,
         token: true,
+        label: KEY_LABEL,
+        id: Buffer.from(KEY_ID),
         sign: true,
         extractable: false, // Private key should never be extractable
-    });
+        sensitive: true, // Mark private key as sensitive
+    };
+
+    // 3. Correctly define the mechanism with the curve OID
+    const mechanism = {
+        name: MechanismEnum.EC_KEY_PAIR_GEN,
+        params: {
+            // OID for secp256k1
+            ecParams: Buffer.from('06052B8104000A', 'hex'),
+        }
+    };
+
+    return session.generateKeyPair(
+        mechanism,
+        publicKeyTemplate,
+        privateKeyTemplate,
+    );
 }
 
 // Derive Ethereum address from public key
