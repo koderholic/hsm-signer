@@ -67,7 +67,18 @@ export function getEthereumKeyPair(session) {
         verify: true,
         label: KEY_LABEL,
         id: Buffer.from(KEY_ID),
-        private: false
+        private: false,
+        wrap: true, // allow this key to wrap other keys
+
+        // enforce constraints on keys being wrapped
+        wrapTemplate: [
+            {
+                type: sensitive, value: true,
+            },
+            {
+                type: extractable, value: true
+            }
+        ],
     };
 
 
@@ -81,7 +92,16 @@ export function getEthereumKeyPair(session) {
         id: Buffer.from(KEY_ID),
         sign: true,
         extractable: false,
+        unwrap: true,
         sensitive: true,
+        unwrapTemplate: [
+            {
+                type: sensitive, value: true,
+            },
+            {
+                type: extractable, value: false
+            }
+        ],
         private: true
     };
 
