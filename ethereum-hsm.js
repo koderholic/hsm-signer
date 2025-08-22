@@ -120,13 +120,19 @@ export function getEthereumKeyPair(session) {
         // generate ECDSA key pair
         var keys = session.generateKeyPair(graphene.KeyGenMechanism.ECDSA, {
             keyType: graphene.KeyType.ECDSA,
+            id: Buffer.from(KEY_ID),
             token: false,
             verify: true,
-            paramsECDSA: graphene.NamedCurve.getByName("secp256k1").value
+            derive: true,
+            paramsECDSA: graphene.NamedCurve.getByName("secp256k1").value,
+            private: false
         }, {
             keyType: graphene.KeyType.ECDSA,
+            id: Buffer.from(KEY_ID),
             token: false,
-            sign: true
+            sign: true,
+            private: true,
+            sensitive: true
         });
 
         return keys
