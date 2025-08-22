@@ -135,6 +135,8 @@ export function getEthereumKeyPair(session) {
             // sensitive: true
         });
 
+        console.log("The keys => ", keys);
+
         return keys
 
 }
