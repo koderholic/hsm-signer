@@ -134,21 +134,27 @@ export function getEthereumKeyPair(session) {
 
 // Derive Ethereum address from public key
 export function deriveEthereumAddress(publicKey) {
-    // Get the raw public key bytes from HSM
-    const rawPublicKey = publicKey.getAttribute(graphene.Attribute.VALUE);
-    
-    // Remove the first byte (compression indicator) if present
-    const keyBytes = rawPublicKey.length === 65 ? rawPublicKey.slice(1) : rawPublicKey;
-    
-    // Hash the public key with Keccak-256
+    // 1. Extract the EC point
+    const ecPoint = publicKey.getAttribute({ ecPoint: null }).ecPoint;
+
+    // 2. Decode ASN.1 OCTET STRING
+    const rawPoint = decodeEcPoint(ecPoint); // should be 65 bytes: 0x04 + X(32) + Y(32)
+
+    if (rawPoint[0] !== 0x04) {
+        throw new Error("Only uncompressed EC points are supported");
+    }
+
+    // 3. Drop the prefix 0x04
+    const keyBytes = rawPoint.slice(1);
+
+    // 4. Hash with Keccak-256
     const hash = keccak256(keyBytes);
-    
-    // Take the last 20 bytes and convert to hex
-    const address = '0x' + hash.slice(-20).toString('hex');
-    
+
+    // 5. Take the last 20 bytes
+    const address = "0x" + hash.slice(-20).toString("hex");
+
     return address;
 }
-
 // Sign Ethereum message using HSM
 export function signEthereumMessage(session, privateKey, message) {
     // Create the Ethereum personal message format
