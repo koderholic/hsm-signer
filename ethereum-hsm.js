@@ -7,6 +7,7 @@ const { secp256k1 } = secp256k1Pkg;
 // Register ecParams (CKA_EC_PARAMS = 0x1806)
 graphene.registerAttribute("ecParams", 0x1806, "buffer");
 graphene.registerAttribute("unwrapTemplate", 0x4000021, "template");
+graphene.registerAttribute("wrapTemplate", 0x4000020, "template");
 
 // Initializes the cloud HSM and returns a module object
 export function initHSM() {
@@ -60,13 +61,20 @@ export function getEthereumKeyPair(session) {
         // 3. Generate new key pair using secp256k1
         
     const publicKeyTemplate = {
-        // class: graphene.ObjectClass.PUBLIC_KEY,
-        // keyType: graphene.KeyType.EC,
+        class: graphene.ObjectClass.PUBLIC_KEY,
+        keyType: graphene.KeyType.EC,
         ecParams: Buffer.from("06052B8104000A", "hex"), // secp256k1 OID
-        // verify: true,
-        // label: KEY_LABEL,
-        // id: Buffer.from(KEY_ID),
-        private: false
+        verify: true,
+        label: KEY_LABEL,
+        id: Buffer.from(KEY_ID),
+        private: false,
+        wrap: true, // allow this key to wrap other keys
+
+        // enforce constraints on keys being wrapped
+        wrapTemplate: {
+          extractable: true,
+          sensitive: true
+        }
     };
 
 
@@ -74,17 +82,18 @@ export function getEthereumKeyPair(session) {
 
 
     const privateKeyTemplate = {
-        // class: graphene.ObjectClass.PRIVATE_KEY,
-        // keyType: graphene.KeyType.EC,
-        // label: KEY_LABEL,
-        // id: Buffer.from(KEY_ID),
-        // sign: true,
-        // extractable: false,
+        class: graphene.ObjectClass.PRIVATE_KEY,
+        keyType: graphene.KeyType.EC,
+        label: KEY_LABEL,
+        id: Buffer.from(KEY_ID),
+        sign: true,
+        extractable: false,
+        unwrap: true,
         sensitive: true,
-        // unwrapTemplate: {
-        //     sensitive: true,
-        //     extractable: false
-        // },
+        unwrapTemplate: {
+            sensitive: true,
+            extractable: false
+        },
         private: true
     };
 
