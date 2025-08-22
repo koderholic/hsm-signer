@@ -6,7 +6,6 @@ import {
     ecrecover,
     fromRpcSig,
     keccak256 as etherKeccak,
-    toBuffer
   } from 'ethereumjs-util';
 
 // Register ecParams (CKA_EC_PARAMS = 0x1806)
@@ -275,9 +274,13 @@ function parseDERSignature(derSignature) {
 }
 
 // Verify Ethereum signature
+
 export function verifyEthereumSignature(message, signature, expectedAddress) {
     try {
-      const messageBuffer = toBuffer(message);
+      // Correctly create a buffer from the UTF-8 string message
+      const messageBuffer = Buffer.from(message, 'utf-8');
+      
+      // Construct the message hash
       const messageHash = etherKeccak(
         Buffer.concat([
           Buffer.from("\x19Ethereum Signed Message:\n" + messageBuffer.length.toString(), 'utf-8'),
@@ -288,10 +291,10 @@ export function verifyEthereumSignature(message, signature, expectedAddress) {
       // Parse the signature string into r, s, and v
       const sig = fromRpcSig(signature);
       
-      // Recover public key from message hash and signature components
+      // Recover public key
       const publicKey = ecrecover(messageHash, sig.v, sig.r, sig.s);
       
-      // Derive address from recovered public key
+      // Derive address
       const recoveredAddress = '0x' + etherKeccak(publicKey).toString('hex').slice(-40);
       
       return recoveredAddress.toLowerCase() === expectedAddress.toLowerCase();
