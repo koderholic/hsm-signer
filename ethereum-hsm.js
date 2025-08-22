@@ -61,13 +61,13 @@ export function getEthereumKeyPair(session) {
         // 3. Generate new key pair using secp256k1
         
     const publicKeyTemplate = {
-        class: graphene.ObjectClass.PUBLIC_KEY,
-        keyType: graphene.KeyType.EC,
-        ecParams: Buffer.from("06052B8104000A", "hex"), // secp256k1 OID
-        verify: true,
-        label: KEY_LABEL,
-        id: Buffer.from(KEY_ID),
-        private: false,
+        // class: graphene.ObjectClass.PUBLIC_KEY,
+        // keyType: graphene.KeyType.EC,
+        // ecParams: Buffer.from("06052B8104000A", "hex"), // secp256k1 OID
+        // verify: true,
+        // label: KEY_LABEL,
+        // id: Buffer.from(KEY_ID),
+        private: false
         // wrap: true, // allow this key to wrap other keys
         // // enforce constraints on keys being wrapped
         // wrapTemplate: [
@@ -85,14 +85,14 @@ export function getEthereumKeyPair(session) {
 
 
     const privateKeyTemplate = {
-        class: graphene.ObjectClass.PRIVATE_KEY,
-        keyType: graphene.KeyType.EC,
-        label: KEY_LABEL,
-        id: Buffer.from(KEY_ID),
-        sign: true,
-        extractable: false,
+        // class: graphene.ObjectClass.PRIVATE_KEY,
+        // keyType: graphene.KeyType.EC,
+        // label: KEY_LABEL,
+        // id: Buffer.from(KEY_ID),
+        // sign: true,
+        // extractable: false,
         // unwrap: false,
-        // sensitive: true,
+        sensitive: true,
         // unwrapTemplate: [
         //     {
         //         type: sensitive, value: true,
