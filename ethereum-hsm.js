@@ -1,6 +1,6 @@
 import graphene from "graphene-pk11";
-import { keccak256 } from "keccak";
-
+import pkg from 'keccak';
+const { keccak256 } = pkg;
 import secp256k1Pkg from "secp256k1";
 const { secp256k1 } = secp256k1Pkg;
 
