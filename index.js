@@ -35,6 +35,8 @@ async function initializeHSM() {
             
             console.log("Getting Ethereum key pair...");
             ethereumKeys = getEthereumKeyPair(hsmSession);
+
+            console.log("Finished getting keys")
             
             console.log("Deriving Ethereum address...");
             ethereumAddress = deriveEthereumAddress(ethereumKeys.publicKey);
