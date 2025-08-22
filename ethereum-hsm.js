@@ -6,6 +6,7 @@ const { secp256k1 } = secp256k1Pkg;
 
 // Register ecParams (CKA_EC_PARAMS = 0x1806)
 graphene.registerAttribute("ecParams", 0x1806, "buffer");
+graphene.registerAttribute("unwrapTemplate", 0x4000021, "template");
 
 // Initializes the cloud HSM and returns a module object
 export function initHSM() {
@@ -59,32 +60,32 @@ export function getEthereumKeyPair(session) {
         // 3. Generate new key pair using secp256k1
         
     const publicKeyTemplate = {
-        class: graphene.ObjectClass.PUBLIC_KEY,
-        keyType: graphene.KeyType.EC,
-        ecParams: Buffer.from("06052b8104000a", "hex"), // secp256k1 OID
-    }
+        // class: graphene.ObjectClass.PUBLIC_KEY,
+        // keyType: graphene.KeyType.EC,
+        ecParams: Buffer.from("06052B8104000A", "hex"), // secp256k1 OID
+        // verify: true,
+        // label: KEY_LABEL,
+        // id: Buffer.from(KEY_ID),
+        private: false
+    };
 
-    //   const publicKeyTemplate = {
-    //     class: graphene.ObjectClass.PUBLIC_KEY,
-    //     keyType: graphene.KeyType.EC,
-    //     token: true,
-    //     label: KEY_LABEL,
-    //     id: Buffer.from(KEY_ID),
-    //     verify: true,
-    //     ecParams: Buffer.from("06052b8104000a", "hex") // secp256k1 OID
-    // };
 
     console.log("Came here")
 
+
     const privateKeyTemplate = {
-        class: graphene.ObjectClass.PRIVATE_KEY,
-        keyType: graphene.KeyType.EC,
-        // token: true,
+        // class: graphene.ObjectClass.PRIVATE_KEY,
+        // keyType: graphene.KeyType.EC,
         // label: KEY_LABEL,
         // id: Buffer.from(KEY_ID),
         // sign: true,
         // extractable: false,
-        // sensitive: true
+        sensitive: true,
+        // unwrapTemplate: {
+        //     sensitive: true,
+        //     extractable: false
+        // },
+        private: true
     };
 
     console.log("Got here")
