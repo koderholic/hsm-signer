@@ -176,7 +176,7 @@ export function signEthereumMessage(session, privateKey, message) {
     const personalMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
     
     // Hash the personal message
-    const messageHash = keccak256(Buffer.from(personalMessage, 'utf8'));
+    const messageHash = keccak256('keccak256').update(Buffer.from(personalMessage, 'utf8')).digest();
     
     // Sign the hash using HSM
     const signer = session.createSign(graphene.Mechanism.ECDSA, privateKey);
@@ -240,7 +240,7 @@ function parseDERSignature(derSignature) {
 export function verifyEthereumSignature(message, signature, expectedAddress) {
     try {
         const personalMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
-        const messageHash = keccak256(Buffer.from(personalMessage, 'utf8'));
+        const messageHash = keccak256('keccak256').update(Buffer.from(personalMessage, 'utf8')).digest();
         
         // Extract r, s, v from signature
         const r = Buffer.from(signature.slice(2, 66), 'hex');
