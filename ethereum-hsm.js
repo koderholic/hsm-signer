@@ -91,7 +91,7 @@ export function getEthereumKeyPair(session) {
         id: Buffer.from(KEY_ID),
         sign: true,
         extractable: false,
-        unwrap: false,
+        // unwrap: false,
         // sensitive: true,
         // unwrapTemplate: [
         //     {
