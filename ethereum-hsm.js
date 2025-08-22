@@ -118,7 +118,7 @@ export function getEthereumKeyPair(session) {
     // return keyPair;
 
         // generate ECDSA key pair
-        var keys = session.generateKeyPair(graphene.KeyGenMechanism.ECDSA, {
+        var keys = session.generateKeyPair(graphene.KeyGenMechanism.EC, {
             keyType: graphene.KeyType.EC,
             id: Buffer.from(KEY_ID),
             token: false,
