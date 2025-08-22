@@ -132,7 +132,7 @@ export function getEthereumKeyPair(session) {
             token: false,
             sign: true,
             // private: true,
-            sensitive: true
+            // sensitive: true
         });
 
         return keys
