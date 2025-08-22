@@ -30,31 +30,32 @@ export function loginHSMCU(slot) {
 
 // Generate or retrieve Ethereum key pair from HSM
 export function getEthereumKeyPair(session) {
-    // const KEY_ID = "ethereum-key-01";
+    const KEY_ID = "ethereum-key-01";
     // const KEY_LABEL = "Ethereum Key Pair";
 
     // // 1. Correctly find the key pair using a common ID
-    // const privateKeys = session.find({
-    //     class: graphene.ObjectClass.PRIVATE_KEY,
-    //     keyType: graphene.KeyType.EC,
-    //     id: Buffer.from(KEY_ID)
-    // });
+    const privateKeys = session.find({
+        class: graphene.ObjectClass.PRIVATE_KEY,
+        keyType: graphene.KeyType.EC,
+        id: Buffer.from(KEY_ID)
+    });
 
-    // if (privateKeys.length > 0) {
-    //     console.log("Existing Ethereum key pair found in the HSM...");
-    //     const privateKey = privateKeys.items(0);
-    //     // Find the public key with the same ID
-    //     const publicKey = session.find({
-    //         class: graphene.ObjectClass.PUBLIC_KEY,
-    //         keyType: graphene.KeyType.EC,
-    //         id: Buffer.from(KEY_ID)
-    //     }).items(0);
+    if (privateKeys.length > 0) {
+        console.log("Existing Ethereum key pair found in the HSM...");
+        const privateKey = privateKeys.items(0);
+        // Find the public key with the same ID
+        const publicKey = session.find({
+            class: graphene.ObjectClass.PUBLIC_KEY,
+            keyType: graphene.KeyType.EC,
+            id: Buffer.from(KEY_ID)
+        }).items(0);
 
-    //     return {
-    //         privateKey,
-    //         publicKey
-    //     };
-    // }
+        console.log("public key => ", publicKey)
+        return {
+            privateKey,
+            publicKey
+        };
+    }
 
     // console.log("No Ethereum key pair found. Will use the HSM to create a new one...");
 
