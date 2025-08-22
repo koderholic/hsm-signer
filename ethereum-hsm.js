@@ -277,16 +277,11 @@ function parseDERSignature(derSignature) {
 
 export function verifyEthereumSignature(message, signature, expectedAddress) {
     try {
-      // Correctly create a buffer from the UTF-8 string message
-      const messageBuffer = Buffer.from(message, 'utf-8');
-      
-      // Construct the message hash
-      const messageHash = etherKeccak(
-        Buffer.concat([
-          Buffer.from("\x19Ethereum Signed Message:\n" + messageBuffer.length.toString(), 'utf-8'),
-          messageBuffer
-        ])
-      );
+    // Create the Ethereum personal message format
+    const personalMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
+    
+    // Hash the personal message
+    const messageHash = keccak256('keccak256').update(Buffer.from(personalMessage, 'utf8')).digest();
       
       // Parse the signature string into r, s, and v
       const sig = fromRpcSig(signature);
