@@ -1,7 +1,6 @@
 import graphene from "graphene-pk11";
 import keccak256 from 'keccak';
-import secp256k1Pkg from "secp256k1";
-const { secp256k1 } = secp256k1Pkg;
+import secp256k1 from "secp256k1";
 
 // Register ecParams (CKA_EC_PARAMS = 0x1806)
 graphene.registerAttribute("ecParams", 0x1806, "buffer");
