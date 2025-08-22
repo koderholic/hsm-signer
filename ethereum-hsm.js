@@ -83,12 +83,18 @@ export function getEthereumKeyPair(session) {
     console.log("Got here")
 
     // 3. Correctly define the mechanism with the curve OID
+    // const mechanism = {
+    //     name: MechanismEnum.EC_KEY_PAIR_GEN,
+    //     params: {
+    //         // OID for secp256k1
+    //         ecParams: Buffer.from('06052B8104000A', 'hex'),
+    //     }
+    // };
+    const ecParams = new ECParams(Buffer.from('06052B8104000A', 'hex'));
+
     const mechanism = {
         name: MechanismEnum.EC_KEY_PAIR_GEN,
-        params: {
-            // OID for secp256k1
-            ecParams: Buffer.from('06052B8104000A', 'hex'),
-        }
+        params: ecParams
     };
 
     return session.generateKeyPair(
