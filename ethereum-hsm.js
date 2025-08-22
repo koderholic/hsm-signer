@@ -144,24 +144,38 @@ export function getEthereumKeyPair(session) {
 
 // Derive Ethereum address from public key
 export function deriveEthereumAddress(publicKey) {
-    // 1. Extract EC point from HSM
-    const ecPoint = publicKey.getAttribute("ecPoint");
 
-    // 2. Decode ASN.1 OCTET STRING
-    const rawPoint = decodeEcPoint(ecPoint); // [0x04 || X || Y]
+     // get public key attributes
+     var pubKey = keys.publicKey.getAttribute({
+        modulus: null,
+        publicExponent: null
+    });
+    
+    // convert values to base64
+    pubKey.modulus = pubKey.modulus.toString("base64");
+    pubKey.publicExponent = pubKey.publicExponent.toString("base64");
+    
+    
+    console.log("pubkey => ", JSON.stringify(pubKey, null, 4));
 
-    if (rawPoint[0] !== 0x04) {
-        throw new Error("Only uncompressed EC points are supported");
-    }
+    // // 1. Extract EC point from HSM
+    // const ecPoint = publicKey.getAttribute("ecPoint");
 
-    // 3. Drop 0x04 prefix
-    const keyBytes = rawPoint.slice(1);
+    // // 2. Decode ASN.1 OCTET STRING
+    // const rawPoint = decodeEcPoint(ecPoint); // [0x04 || X || Y]
 
-    // 4. Hash with Keccak-256
-    const hash = keccak256(keyBytes);
+    // if (rawPoint[0] !== 0x04) {
+    //     throw new Error("Only uncompressed EC points are supported");
+    // }
 
-    // 5. Last 20 bytes → Ethereum address
-    return "0x" + hash.slice(-20).toString("hex");
+    // // 3. Drop 0x04 prefix
+    // const keyBytes = rawPoint.slice(1);
+
+    // // 4. Hash with Keccak-256
+    // const hash = keccak256(keyBytes);
+
+    // // 5. Last 20 bytes → Ethereum address
+    // return "0x" + hash.slice(-20).toString("hex");
 }
 
 function decodeEcPoint(ecPointBuffer) {
