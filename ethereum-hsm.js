@@ -71,10 +71,10 @@ export function getEthereumKeyPair(session) {
         wrap: true, // allow this key to wrap other keys
 
         // enforce constraints on keys being wrapped
-        wrapTemplate: {
-          extractable: true,
-          sensitive: true
-        }
+        wrapTemplate: [
+            { type: graphene.CKA.EXTRACTABLE, value: true },
+            { type: graphene.CKA.SENSITIVE, value: true }
+        ]
     };
 
 
@@ -90,10 +90,10 @@ export function getEthereumKeyPair(session) {
         extractable: false,
         unwrap: true,
         sensitive: true,
-        unwrapTemplate: {
-            sensitive: true,
-            extractable: false
-        },
+        unwrapTemplate: [
+            { type: graphene.CKA.EXTRACTABLE, value: false },
+            { type: graphene.CKA.SENSITIVE, value: true }
+        ],
         private: true
     };
 
