@@ -420,7 +420,11 @@ function toBufferFromHexOrNumber(value) {
     if (typeof value === 'string') {
         const hex = value.startsWith('0x') ? value.slice(2) : value;
         if (hex.length === 0) return Buffer.alloc(0);
-        return Buffer.from(hex.length % 2 === 0 ? hex : '0' + hex, 'hex');
+        const buf = Buffer.from(hex.length % 2 === 0 ? hex : '0' + hex, 'hex');
+        // strip leading zero bytes for RLP minimal encoding; zero => empty buffer
+        let i = 0;
+        while (i < buf.length && buf[i] === 0) i++;
+        return i === buf.length ? Buffer.alloc(0) : buf.subarray(i);
     }
     if (typeof value === 'number' || typeof value === 'bigint') {
         let bn = BigInt(value);
