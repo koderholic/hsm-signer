@@ -410,3 +410,147 @@ export function verifyEthereumSignature(message, signature, expectedAddress) {
       return false;
     }
   }
+
+// --------------------------
+// Transaction signing helpers
+// --------------------------
+
+function toBufferFromHexOrNumber(value) {
+    if (value === undefined || value === null) return Buffer.alloc(0);
+    if (typeof value === 'string') {
+        const hex = value.startsWith('0x') ? value.slice(2) : value;
+        if (hex.length === 0) return Buffer.alloc(0);
+        return Buffer.from(hex.length % 2 === 0 ? hex : '0' + hex, 'hex');
+    }
+    if (typeof value === 'number' || typeof value === 'bigint') {
+        let bn = BigInt(value);
+        if (bn === 0n) return Buffer.alloc(0);
+        const bytes = [];
+        while (bn > 0n) {
+            bytes.push(Number(bn & 0xffn));
+            bn >>= 8n;
+        }
+        return Buffer.from(bytes.reverse());
+    }
+    if (Buffer.isBuffer(value)) return value;
+    throw new Error('Unsupported value type for buffer conversion');
+}
+
+function rlpEncode(input) {
+    if (Array.isArray(input)) {
+        const encodedItems = input.map(rlpEncode);
+        const payload = Buffer.concat(encodedItems);
+        return Buffer.concat([encodeLength(payload.length, 0xc0), payload]);
+    } else {
+        const buf = toBufferFromHexOrNumber(input);
+        if (buf.length === 1 && buf[0] < 0x80) return buf;
+        return Buffer.concat([encodeLength(buf.length, 0x80), buf]);
+    }
+}
+
+function encodeLength(len, offset) {
+    if (len < 56) {
+        return Buffer.from([len + offset]);
+    } else {
+        const lenBuf = toBufferFromHexOrNumber(len);
+        return Buffer.concat([Buffer.from([offset + 55 + lenBuf.length]), lenBuf]);
+    }
+}
+
+function keccak256Hash(buf) {
+    return keccak256('keccak256').update(buf).digest();
+}
+
+function signHashWithHsmAndComputeV(session, privateKey, publicKey, hash32) {
+    const sign = session.createSign("ECDSA", privateKey);
+    const sig = sign.once(hash32);
+    const r = sig.subarray(0, 32);
+    const s = sig.subarray(32, 64);
+
+    const ecPoint = publicKey.getAttribute({ pointEC: null }).pointEC;
+    const rawPoint = decodeEcPoint(ecPoint);
+    if (rawPoint[0] !== 0x04) throw new Error("Only uncompressed EC points are supported from the HSM public key.");
+    const pubXY = rawPoint.subarray(1);
+
+    let v;
+    for (let rec = 0; rec < 2; rec++) {
+        try {
+            const recovered = ecrecover(hash32, rec + 27, r, s);
+            if (recovered.toString('hex') === pubXY.toString('hex')) {
+                v = 27 + rec;
+                break;
+            }
+        } catch (_) {}
+    }
+    if (v === undefined) throw new Error('Could not determine recovery id (v)');
+    return { r, s, v };
+}
+
+export async function signAndSendEtherTransaction(session, privateKey, publicKey, params) {
+    const rpcUrl = 'https://gateway.tenderly.co/public/sepolia';
+    const chainId = params.chainId ?? 11155111;
+
+    const nonceBuf = toBufferFromHexOrNumber(params.nonce);
+    const gasPriceBuf = toBufferFromHexOrNumber(params.gasPriceWei);
+    const gasLimitBuf = toBufferFromHexOrNumber(params.gasLimit);
+    const toBuf = params.to ? toBufferFromHexOrNumber(params.to) : Buffer.alloc(0);
+    const valueBuf = toBufferFromHexOrNumber(params.valueWei ?? 0);
+    const dataBuf = params.data ? toBufferFromHexOrNumber(params.data) : Buffer.alloc(0);
+    const chainIdBuf = toBufferFromHexOrNumber(chainId);
+
+    const unsignedForSig = [
+        nonceBuf,
+        gasPriceBuf,
+        gasLimitBuf,
+        toBuf,
+        valueBuf,
+        dataBuf,
+        chainIdBuf,
+        Buffer.alloc(0),
+        Buffer.alloc(0)
+    ];
+
+    const rlpUnsigned = rlpEncode(unsignedForSig);
+    const msgHash = keccak256Hash(rlpUnsigned);
+
+    const { r, s, v } = signHashWithHsmAndComputeV(session, privateKey, publicKey, msgHash);
+    const recId = v - 27;
+    const vFinal = BigInt(chainId) * 2n + 35n + BigInt(recId);
+
+    const signed = [
+        nonceBuf,
+        gasPriceBuf,
+        gasLimitBuf,
+        toBuf,
+        valueBuf,
+        dataBuf,
+        toBufferFromHexOrNumber(vFinal),
+        stripLeadingZeros(r),
+        stripLeadingZeros(s)
+    ];
+
+    const rawTx = rlpEncode(signed).toString('hex');
+    const rawTxHex = '0x' + rawTx;
+
+    const res = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'eth_sendRawTransaction',
+            params: [rawTxHex]
+        })
+    });
+    const json = await res.json();
+    if (json.error) {
+        throw new Error(`RPC error: ${json.error.code} ${json.error.message}`);
+    }
+    return json.result;
+}
+
+function stripLeadingZeros(buf) {
+    let i = 0;
+    while (i < buf.length && buf[i] === 0) i++;
+    return i === 0 ? buf : buf.subarray(i);
+}

@@ -7,7 +7,8 @@ import {
     getEthereumKeyPair, 
     deriveEthereumAddress,
     signEthereumMessage,
-    verifyEthereumSignature
+    verifyEthereumSignature,
+    signAndSendEtherTransaction
 } from "./ethereum-hsm.js";
 
 const app = express();
@@ -175,6 +176,51 @@ app.post("/verify", (req, res) => {
     }
 });
 
+// Send ETH (legacy type-0) via HSM-signed transaction
+app.post("/send-eth", async (req, res) => {
+    if (!hsmSession || !ethereumKeys) {
+        return res.status(503).json({ 
+            error: "HSM not ready", 
+            message: "HSM is still initializing or not connected" 
+        });
+    }
+
+    const { to, valueWei, valueEth, gasPriceWei, gasLimit, nonce, data, chainId } = req.body || {};
+    if (!to || (!valueWei && !valueEth) || !gasPriceWei || !gasLimit || nonce === undefined) {
+        return res.status(400).json({
+            error: "Missing parameters",
+            message: "Required: to, (valueWei or valueEth), gasPriceWei, gasLimit, nonce"
+        });
+    }
+
+    try {
+        // Convert valueEth to valueWei if provided
+        let valueToUse = valueWei;
+        if (!valueWei && valueEth) {
+            valueToUse = ethToWeiHex(valueEth);
+        }
+        const txHash = await signAndSendEtherTransaction(
+            hsmSession,
+            ethereumKeys.privateKey,
+            ethereumKeys.publicKey,
+            { to, valueWei: valueToUse, gasPriceWei, gasLimit, nonce, data, chainId }
+        );
+        res.json({ success: true, txHash });
+    } catch (error) {
+        console.error("❌ send-eth failed:", error);
+        res.status(500).json({ error: "send-eth failed", message: error.message });
+    }
+});
+
+function ethToWeiHex(ethStr) {
+    // Convert a decimal string (e.g., "0.122") to a 0x-prefixed wei hex string
+    const [intPart, fracPartRaw] = String(ethStr).split('.')
+    const fracPart = (fracPartRaw || '').slice(0, 18) // max 18 decimals
+    const paddedFrac = (fracPart + '0'.repeat(18)).slice(0, 18)
+    const weiStr = BigInt(intPart || '0') * 10n**18n + BigInt(paddedFrac || '0')
+    return '0x' + weiStr.toString(16)
+}
+
 // Test endpoint for development
 app.get("/test", (req, res) => {
     res.json({
@@ -241,6 +287,7 @@ app.listen(PORT, async () => {
         console.log(`   GET  /account  - Get Ethereum account info`);
         console.log(`   POST /sign     - Sign a message`);
         console.log(`   POST /verify   - Verify a signature`);
+        console.log(`   POST /send-eth - Send ETH (legacy txn)`);
         console.log(`   GET  /test     - Show help and examples`);
     } else {
         console.log(`⚠️  Service started but HSM is not ready`);
