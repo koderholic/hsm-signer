@@ -200,58 +200,158 @@ function decodeEcPoint(ecPointBuffer) {
     return ecPointBuffer.slice(2, 2 + len);
 }
 // Sign Ethereum message using HSM
-export function signEthereumMessage(session, privateKey, message) {
-    // Create the Ethereum personal message format
-    const personalMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
+// export function signEthereumMessage(session, privateKey, message) {
+//     // Create the Ethereum personal message format
+//     const personalMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
     
-    // Hash the personal message
-    const messageHash = keccak256('keccak256').update(Buffer.from(personalMessage, 'utf8')).digest();
+//     // Hash the personal message
+//     const messageHash = keccak256('keccak256').update(Buffer.from(personalMessage, 'utf8')).digest();
     
-    // var sign = session.createSign("ECDSA_SHA256", privateKey);
-    // sign.update("simple text 1");
-    // sign.update("simple text 2");
-    // var signature = sign.final();
+//     // var sign = session.createSign("ECDSA_SHA256", privateKey);
+//     // sign.update("simple text 1");
+//     // sign.update("simple text 2");
+//     // var signature = sign.final();
 
-    // Sign the hash using HSM - try different ECDSA mechanisms
-    // let signer = session.createSign({ name: 'ECDSA' }, privateKey);
-    // try {
-    //     signer = session.createSign(graphene.Mechanism.ECDSA_SHA256, privateKey);
-    // } catch (e) {
-    //     try {
-    //         signer = session.createSign(graphene.Mechanism.ECDSA, privateKey);
-    //     } catch (e2) {
-    //         // Use a basic mechanism object
-    //         signer = session.createSign({ name: 'ECDSA' }, privateKey);
-    //     }
-    // }
+//     // Sign the hash using HSM - try different ECDSA mechanisms
+//     // let signer = session.createSign({ name: 'ECDSA' }, privateKey);
+//     // try {
+//     //     signer = session.createSign(graphene.Mechanism.ECDSA_SHA256, privateKey);
+//     // } catch (e) {
+//     //     try {
+//     //         signer = session.createSign(graphene.Mechanism.ECDSA, privateKey);
+//     //     } catch (e2) {
+//     //         // Use a basic mechanism object
+//     //         signer = session.createSign({ name: 'ECDSA' }, privateKey);
+//     //     }
+//     // }
 
-    var sign = session.createSign("ECDSA", privateKey);
-//     sign.update(messageHash);
-    var signature = sign.once(messageHash);
-
-    console.log("ECDSA signature (r, s):", signature.toString("hex"));
+//     var sign = session.createSign("ECDSA", privateKey);
+// //     sign.update(messageHash);
+//     var signature = sign.once(messageHash);
 
 
-    // const signature = signer.once(messageHash);
+//     console.log("ECDSA signature (r, s):", signature.toString("hex"));
+
+
+//     // const signature = signer.once(messageHash);
     
-    // Convert signature to DER format and extract r, s values
-    const derSignature = Buffer.from(signature, 'binary');
+//     // Convert signature to DER format and extract r, s values
+//     const derSignature = Buffer.from(signature, 'binary');
     
-    // Parse DER signature to get r and s values
-    const { r, s } = parseDERSignature(derSignature);
+//     // Parse DER signature to get r and s values
+//     const { r, s } = parseDERSignature(derSignature);
     
-    // Determine v value (recovery bit)
-    // For Ethereum, we need to determine the correct v value
-    // This is a simplified approach - in production you'd want more robust recovery
-    let v = 27; // Base value
+//     // Determine v value (recovery bit)
+//     // For Ethereum, we need to determine the correct v value
+//     // This is a simplified approach - in production you'd want more robust recovery
+//     let v = 27; // Base value
     
    
     
+//     return {
+//         r: '0x' + r.toString('hex'),
+//         s: '0x' + s.toString('hex'),
+//         v: v,
+//         signature: '0x' + r.toString('hex') + s.toString('hex').padStart(64, '0') + (v - 27).toString(16).padStart(2, '0')
+//     };
+// }
+
+
+
+import { Buffer } from 'buffer'; // Node.js Buffer is often implicitly available, but good to be explicit
+import { keccak256 } from 'ethereum-cryptography/keccak'; // Assuming 'keccak256' is imported or defined
+const ethUtil = require('ethereumjs-util'); // For ecrecover
+
+// Helper function to decode ASN.1 OCTET STRING if needed, placeholder if not provided
+// In a real scenario, this would come from your HSM integration library.
+function decodeEcPoint(ecPointBuffer) {
+    // This is a placeholder. Your actual implementation from the HSM library
+    // should correctly parse the ASN.1 OCTET STRING to get the raw EC point bytes.
+    // For many HSMs, if `pointEC` is already the raw bytes, this function
+    // might not be necessary, or it might just return the input.
+    // Assuming ecPointBuffer is already the raw [0x04 || X || Y] buffer.
+    return ecPointBuffer;
+}
+
+
+/**
+ * Signs an Ethereum personal message using a PKCS#11 private key
+ * and returns the signature in the Ethereum (r, s, v) format.
+ *
+ * @param {graphene.Session} session The PKCS#11 session.
+ * @param {graphene.NativeKey} privateKey The PKCS#11 private key object for signing.
+ * @param {graphene.NativeKey} publicKey The PKCS#11 public key object associated with the private key.
+ * @param {string} message The message to be signed.
+ * @returns {object} An object containing the r, s, v components and the full 0x-prefixed signature.
+ */
+export function signEthereumMessage(session, privateKey, publicKey, message) {
+    // 1. Create the Ethereum personal message format
+    const personalMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
+    
+    // 2. Hash the personal message using Keccak-256
+    const messageHash = keccak256('keccak256').update(Buffer.from(personalMessage, 'utf8')).digest();
+    
+    // 3. Sign the message hash using the HSM
+    // Ensure the mechanism is 'ECDSA' for raw secp256k1 signatures
+    const sign = session.createSign("ECDSA", privateKey);
+    const signatureRS = sign.once(messageHash); // signatureRS will be a Buffer (r || s)
+    
+    console.log("Raw ECDSA signature (r || s):", signatureRS.toString("hex"));
+
+    // 4. Extract r and s components (each 32 bytes for secp256k1)
+    const r = signatureRS.subarray(0, 32);
+    const s = signatureRS.subarray(32, 64);
+
+    // 5. Get the raw uncompressed public key bytes from the HSM's publicKey object
+    const ecPoint = publicKey.getAttribute({ pointEC: null }).pointEC; // [0x04 || X || Y]
+    if (ecPoint[0] !== 0x04) {
+        throw new Error("Only uncompressed EC points are supported from the HSM public key.");
+    }
+    const rawPublicKeyBytes = ecPoint.slice(1); // X || Y (64 bytes)
+    
+    let v; // Recovery ID
+    let recoveredPub;
+
+    // 6. Determine the v (recovery ID) value
+    // Iterate through possible v values (0 and 1, which map to 27 and 28)
+    for (let i = 0; i < 2; i++) {
+        try {
+            // ethUtil.ecrecover expects the message hash, v, r, and s
+            // The v value in ecrecover is 0 or 1, which internally gets converted to 27 or 28.
+            recoveredPub = ethUtil.ecrecover(messageHash, i, r, s);
+            // Compare the recovered public key with the actual public key from the HSM
+            if (recoveredPub.toString('hex') === rawPublicKeyBytes.toString('hex')) {
+                v = i + 27; // Ethereum's v values are typically 27 or 28
+                break;
+            }
+        } catch (e) {
+            // Handle potential errors during recovery (e.g., invalid signature components)
+            console.warn(`Attempted recovery with v_candidate=${i} failed: ${e.message}`);
+        }
+    }
+
+    if (v === undefined) {
+        throw new Error("Could not determine the correct recovery ID (v) for the signature.");
+    }
+    
+    // 7. Format the output as an Ethereum signature
+    // The final signature is r (32 bytes) + s (32 bytes) + v (1 byte)
+    // s must be padded to 64 hex characters (32 bytes)
+    const finalSignatureBuffer = Buffer.concat([r, s, Buffer.from([v])]);
+    const fullEthSignature = '0x' + finalSignatureBuffer.toString('hex');
+
+    console.log("Ethereum Signature (r, s, v components):", {
+        r: '0x' + r.toString('hex'),
+        s: '0x' + s.toString('hex'),
+        v: v
+    });
+    console.log("Full Ethereum Signature String:", fullEthSignature);
+
     return {
         r: '0x' + r.toString('hex'),
         s: '0x' + s.toString('hex'),
         v: v,
-        signature: '0x' + r.toString('hex') + s.toString('hex').padStart(64, '0') + (v - 27).toString(16).padStart(2, '0')
+        signature: fullEthSignature // This is the full 65-byte R, S, V signature as a hex string
     };
 }
 

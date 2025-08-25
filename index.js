@@ -102,7 +102,7 @@ app.post("/sign", (req, res) => {
     try {
         console.log(`📝 Signing message: "${message}"`);
         
-        const signature = signEthereumMessage(hsmSession, ethereumKeys.privateKey, message);
+        const signature = signEthereumMessage(hsmSession, ethereumKeys.privateKey, ethereumKeys.publicKey, message);
         
         console.log(`✅ Message signed successfully`);
         console.log(`🔐 Signature: ${signature.signature}`);
