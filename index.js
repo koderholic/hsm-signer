@@ -194,16 +194,14 @@ app.post("/send-eth", async (req, res) => {
     }
 
     try {
-        // Convert valueEth to valueWei if provided
-        let valueToUse = valueWei;
-        if (!valueWei && valueEth) {
-            valueToUse = ethToWeiHex(valueEth);
-        }
+        // Convert valueEth to valueWei
+            valueWei = ethToWeiHex(valueEth);
+        
         const txHash = await signAndSendEtherTransaction(
             hsmSession,
             ethereumKeys.privateKey,
             ethereumKeys.publicKey,
-            { to, from: ethereumAddress, valueWei: valueToUse, gasLimit, data, chainId }
+            { to, from: ethereumAddress, valueWei, gasLimit, data, chainId }
         );
         res.json({ success: true, txHash });
     } catch (error) {
