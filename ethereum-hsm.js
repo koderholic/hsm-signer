@@ -303,10 +303,11 @@ export function signEthereumMessage(session, privateKey, publicKey, message) {
 
     // 5. Get the raw uncompressed public key bytes from the HSM's publicKey object
     const ecPoint = publicKey.getAttribute({ pointEC: null }).pointEC; // [0x04 || X || Y]
-    if (ecPoint[0] !== 0x04) {
+    const rawPoint = decodeEcPoint(ecPoint); // [0x04 || X || Y]
+    if (rawPoint[0] !== 0x04) {
         throw new Error("Only uncompressed EC points are supported from the HSM public key.");
     }
-    const rawPublicKeyBytes = ecPoint.slice(1); // X || Y (64 bytes)
+    const rawPublicKeyBytes = rawPoint.slice(1); // X || Y (64 bytes)
     
     let v; // Recovery ID
     let recoveredPub;
