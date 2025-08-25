@@ -144,7 +144,7 @@ export function getEthereumKeyPair(session) {
 
         // return keys
 
-        privateKeys = session.find({
+        const privateKeys = session.find({
             class: graphene.ObjectClass.PRIVATE_KEY,
             keyType: graphene.KeyType.EC,
             id: Buffer.from(KEY_ID)
