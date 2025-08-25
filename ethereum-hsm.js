@@ -650,6 +650,8 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
     ];
 
     const rawTx = rlpEncode(signed).toString('hex');
+
+    console.log("Signed tx => ", rawTx);
     // const rawTxHex = '0x' + rawTx;
 
     const res = await fetch(rpcUrl, {
