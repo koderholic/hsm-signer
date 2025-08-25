@@ -213,7 +213,7 @@ export function signEthereumMessage(session, privateKey, message) {
     // var signature = sign.final();
 
     // Sign the hash using HSM - try different ECDSA mechanisms
-    let signer = session.createSign(graphene.Mechanism.ECDSA, privateKey);;
+    let signer = session.createSign({ name: 'ECDSA' }, privateKey);
     // try {
     //     signer = session.createSign(graphene.Mechanism.ECDSA_SHA256, privateKey);
     // } catch (e) {
