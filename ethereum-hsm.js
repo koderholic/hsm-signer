@@ -536,6 +536,7 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
     const gasPriceWei = BigInt(gasPriceJson.result);
 
     // Fetch the transaction count (nonce) for the sender
+    // Fetch the transaction count (nonce) for the sender
     const nonceRes = await fetch(rpcUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -546,6 +547,7 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
             params: [params.from, 'latest']
         })
     });
+    
     const nonceJson = await nonceRes.json();
     if (nonceJson.error) {
         throw new Error(`RPC error fetching nonce: ${nonceJson.error.code} ${nonceJson.error.message}`);
