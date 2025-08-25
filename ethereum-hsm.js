@@ -321,6 +321,9 @@ export function signEthereumMessage(session, privateKey, publicKey, message) {
             recoveredPub = ecrecover(messageHash, i, r, s);
             // Compare the recovered public key with the actual public key from the HSM
             if (recoveredPub.toString('hex') === rawPublicKeyBytes.toString('hex')) {
+                console.log("recoveredPub == > ", recoveredPub)
+                console.log("rawPublicKeyBytes == > ", rawPublicKeyBytes.toString('hex'))
+
                 v = i + 27; // Ethereum's v values are typically 27 or 28
                 break;
             }
