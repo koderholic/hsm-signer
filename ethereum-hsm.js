@@ -465,23 +465,40 @@ function keccak256Hash(buf) {
     return keccak256('keccak256').update(buf).digest();
 }
 
+// secp256k1 order and half-order for low-S normalization
+const SECP256K1_N = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141');
+const SECP256K1_N_DIV_2 = SECP256K1_N >> 1n;
+
 function signHashWithHsmAndComputeV(session, privateKey, publicKey, hash32) {
     const sign = session.createSign("ECDSA", privateKey);
     const sig = sign.once(hash32);
-    const r = sig.subarray(0, 32);
-    const s = sig.subarray(32, 64);
+    let r = sig.subarray(0, 32);
+    let s = sig.subarray(32, 64);
 
     const ecPoint = publicKey.getAttribute({ pointEC: null }).pointEC;
     const rawPoint = decodeEcPoint(ecPoint);
     if (rawPoint[0] !== 0x04) throw new Error("Only uncompressed EC points are supported from the HSM public key.");
     const pubXY = rawPoint.subarray(1);
 
+    // Normalize S to low-S; if flipped, toggle recovery id later
+    const sBig = BigInt('0x' + s.toString('hex'));
+    let sWasHigh = false;
+    if (sBig > SECP256K1_N_DIV_2) {
+        const sNorm = SECP256K1_N - sBig;
+        // write back normalized s as 32-byte big-endian
+        const sHex = sNorm.toString(16).padStart(64, '0');
+        s = Buffer.from(sHex, 'hex');
+        sWasHigh = true;
+    }
+
     let v;
     for (let rec = 0; rec < 2; rec++) {
         try {
-            const recovered = ecrecover(hash32, rec + 27, r, s);
+            // If S was flipped, flip recovery bit for comparison
+            const recAdj = sWasHigh ? (rec ^ 1) : rec;
+            const recovered = ecrecover(hash32, recAdj + 27, r, s);
             if (recovered.toString('hex') === pubXY.toString('hex')) {
-                v = 27 + rec;
+                v = 27 + recAdj;
                 break;
             }
         } catch (_) {}
@@ -491,7 +508,7 @@ function signHashWithHsmAndComputeV(session, privateKey, publicKey, hash32) {
 }
 
 export async function signAndSendEtherTransaction(session, privateKey, publicKey, params) {
-    const rpcUrl = 'https://gateway.tenderly.co/public/sepolia';
+    const rpcUrl = process.env.RPC_URL;
     const chainId = params.chainId ?? 11155111;
 
     const nonceBuf = toBufferFromHexOrNumber(params.nonce);
