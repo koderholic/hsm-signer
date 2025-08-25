@@ -169,7 +169,6 @@ export function getEthereumKeyPair(session) {
 
 }
 
-// Derive Ethereum address from public key
 export function deriveEthereumAddress(publicKey) {
  
     // 1. Extract EC point from HSM
@@ -183,13 +182,16 @@ export function deriveEthereumAddress(publicKey) {
         throw new Error("Only uncompressed EC points are supported");
     }
 
-    // 3. Drop 0x04 prefix
+    // 3. Drop 0x04 prefix and get the 64-byte public key
     const keyBytes = rawPoint.slice(1);
 
-    // 4. Hash with Keccak-256
+    // 4. Console log the public key in hex format
+    console.log("Public Key (uncompressed): 0x" + keyBytes.toString("hex"));
+
+    // 5. Hash with Keccak-256
     const hash = keccak256('keccak256').update(keyBytes).digest();
 
-    // 5. Last 20 bytes → Ethereum address
+    // 6. Last 20 bytes → Ethereum address
     return "0x" + hash.slice(-20).toString("hex");
 }
 
