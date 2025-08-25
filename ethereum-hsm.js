@@ -506,6 +506,7 @@ function signHashWithHsmAndComputeV(session, privateKey, publicKey, hash32) {
             const recoveredPub = ecrecover(hash32, i, r, s);
             // Compare the recovered public key with the actual public key from the HSM
             if (recoveredPub.toString('hex') === pubXY.toString('hex')) {
+                console.log("Pubkey => ", pubXY.toString('hex'))
 
                 v = i ; // Ethereum's v values are typically 27 or 28
                 break;
