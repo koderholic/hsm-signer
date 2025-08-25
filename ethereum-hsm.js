@@ -225,7 +225,7 @@ export function signEthereumMessage(session, privateKey, message) {
     //     }
     // }
 
-    var sign = session.createSign("ECDSA", keys.privateKey);
+    var sign = session.createSign("ECDSA", privateKey);
     sign.update(messageHash);
     var signature = sign.final();
 
