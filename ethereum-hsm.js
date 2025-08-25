@@ -507,12 +507,53 @@ function signHashWithHsmAndComputeV(session, privateKey, publicKey, hash32) {
     return { r, s, v };
 }
 
+import { rlpEncode } from '@ethersproject/rlp';
+import { keccak256 as keccak256Hash } from '@ethersproject/keccak256';
+import { toBufferFromHexOrNumber, stripLeadingZeros } from './utils';
+
+// You will need to import these functions from wherever they are defined
+// import { signHashWithHsmAndComputeV } from './hsm-signer'; 
+
 export async function signAndSendEtherTransaction(session, privateKey, publicKey, params) {
     const rpcUrl = process.env.RPC_URL;
     const chainId = params.chainId ?? 11155111;
 
-    const nonceBuf = toBufferFromHexOrNumber(params.nonce);
-    const gasPriceBuf = toBufferFromHexOrNumber(params.gasPriceWei);
+    // Fetch the current gas price from the network
+    const gasPriceRes = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'eth_gasPrice',
+            params: []
+        })
+    });
+    const gasPriceJson = await gasPriceRes.json();
+    if (gasPriceJson.error) {
+        throw new Error(`RPC error fetching gas price: ${gasPriceJson.error.code} ${gasPriceJson.error.message}`);
+    }
+    const gasPriceWei = BigInt(gasPriceJson.result);
+
+    // Fetch the transaction count (nonce) for the sender
+    const nonceRes = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'eth_getTransactionCount',
+            params: [params.from, 'latest']
+        })
+    });
+    const nonceJson = await nonceRes.json();
+    if (nonceJson.error) {
+        throw new Error(`RPC error fetching nonce: ${nonceJson.error.code} ${nonceJson.error.message}`);
+    }
+    const nonce = parseInt(nonceJson.result, 16);
+
+    const nonceBuf = toBufferFromHexOrNumber(nonce);
+    const gasPriceBuf = toBufferFromHexOrNumber(gasPriceWei);
     const gasLimitBuf = toBufferFromHexOrNumber(params.gasLimit);
     const toBuf = params.to ? toBufferFromHexOrNumber(params.to) : Buffer.alloc(0);
     const valueBuf = toBufferFromHexOrNumber(params.valueWei ?? 0);
@@ -534,8 +575,10 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
     const rlpUnsigned = rlpEncode(unsignedForSig);
     const msgHash = keccak256Hash(rlpUnsigned);
 
-    const { r, s, v } = signHashWithHsmAndComputeV(session, privateKey, publicKey, msgHash);
-    const recId = v;
+    // Your signing function should return a recovery ID (recId)
+    const { r, s, recId } = signHashWithHsm(session, privateKey, publicKey, msgHash);
+    
+    // Correctly calculate v using EIP-155
     const vFinal = BigInt(chainId) * 2n + 35n + BigInt(recId);
 
     const signed = [
