@@ -11,6 +11,9 @@ import {
 
   import { Buffer } from 'buffer'; // Node.js Buffer is often implicitly available, but good to be explicit
   import { rlpEncode } from '@ethersproject/rlp';
+  import pkg from '@ethersproject/rlp';
+const { rlpEncode } = pkg;
+
 //   import { toBufferFromHexOrNumber, stripLeadingZeros } from './utils';
 
 // Register ecParams (CKA_EC_PARAMS = 0x1806)
