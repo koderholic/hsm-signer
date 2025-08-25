@@ -11,7 +11,9 @@ import {
 
   import { Buffer } from 'buffer'; // Node.js Buffer is often implicitly available, but good to be explicit
   import pkg from '@ethersproject/rlp';
-const { rlpEncode } = pkg;
+const { encode: rlpEncode } = pkg;
+
+// import { encode as rlpEncode } from '@ethersproject/rlp';
 
 //   import { toBufferFromHexOrNumber, stripLeadingZeros } from './utils';
 
@@ -547,7 +549,7 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
             params: [params.from, 'latest']
         })
     });
-    
+
     const nonceJson = await nonceRes.json();
     if (nonceJson.error) {
         throw new Error(`RPC error fetching nonce: ${nonceJson.error.code} ${nonceJson.error.message}`);
