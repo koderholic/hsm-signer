@@ -185,7 +185,7 @@ app.post("/send-eth", async (req, res) => {
         });
     }
 
-    const { to, valueWei, valueEth, gasPriceWei, gasLimit, nonce, data, chainId } = req.body || {};
+    const { to, valueEth, gasLimit, data, chainId } = req.body || {};
     if (!to || (!valueWei && !valueEth) || !gasPriceWei || !gasLimit || nonce === undefined) {
         return res.status(400).json({
             error: "Missing parameters",
@@ -203,7 +203,7 @@ app.post("/send-eth", async (req, res) => {
             hsmSession,
             ethereumKeys.privateKey,
             ethereumKeys.publicKey,
-            { to, from: "0x111732c30117e9219201896f2cfad924cbbc598c", valueWei: "0x5AF3107A4000", gasPriceWei, gasLimit, nonce, data, chainId }
+            { to, from: ethereumAddress, valueWei: valueToUse, gasLimit, data, chainId }
         );
         res.json({ success: true, txHash });
     } catch (error) {

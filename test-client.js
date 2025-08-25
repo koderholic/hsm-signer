@@ -80,25 +80,16 @@ async function runTests() {
     await testEndpoint('GET', '/test');
 
     // Test 6: Send 0.122 ETH to given address on Sepolia
-    console.log('6️⃣ Testing send-eth endpoint (0.122 ETH to 0x1117...598c)...');
-    // Fetch sender address to display balance
-    const acctInfo = await testEndpoint('GET', '/account');
-    const fromAddress = acctInfo?.data?.address;
-    console.log('From address:', fromAddress);
-    // You must provide realistic nonce/gas for your account; optionally, you can prefetch via RPC.
-    // Here we expect the server to be provided with correct params; adjust as needed.
+    console.log('6️⃣ Testing send-eth endpoint (0.0.001 ETH to 0x229ef326FE08C8b2423B786052D7E1a1AdDaD226...)');
+
     const to = '0x229ef326FE08C8b2423B786052D7E1a1AdDaD226';
+
     // Example: set gas values conservatively; you may adjust based on network
     const sendResult = await testEndpoint('POST', '/send-eth', {
         to,
-        // 0.122 ETH (server supports valueEth or valueWei)
-        valueEth: '0.001',
+        valueEth: '0.122',
         // example gas price and limit; consider fetching from RPC for accuracy
-        gasPriceWei: '0x3b9aca00', // 1 gwei
         gasLimit: '0x5208',        // 21000
-        // nonce must match the HSM account; set it before running the test
-        // replace this placeholder with your actual nonce
-        nonce: '0x0'
     });
     if (!sendResult.success) {
         console.log('⚠️  send-eth failed. Ensure nonce/gas params are correct for your account.');

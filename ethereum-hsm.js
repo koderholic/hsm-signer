@@ -1,27 +1,15 @@
 import graphene from "graphene-pk11";
 import keccak256 from 'keccak';
-import secp256k1Pkg from "secp256k1";
-const { secp256k1 } = secp256k1Pkg;
 import {
     ecrecover,
     fromRpcSig,
     keccak256 as etherKeccak,
-  } from 'ethereumjs-util';
-
-
-  import { Buffer } from 'buffer'; // Node.js Buffer is often implicitly available, but good to be explicit
-  import pkg from '@ethersproject/rlp';
+} from 'ethereumjs-util';
+import { Buffer } from 'buffer'; // Node.js Buffer is often implicitly available, but good to be explicit
+import pkg from '@ethersproject/rlp';
 const { encode: rlpEncode } = pkg;
 
-// import { encode as rlpEncode } from '@ethersproject/rlp';
 
-//   import { toBufferFromHexOrNumber, stripLeadingZeros } from './utils';
-
-// Register ecParams (CKA_EC_PARAMS = 0x1806)
-graphene.registerAttribute("ecParams", 0x1806, "buffer");
-graphene.registerAttribute("unwrapTemplate", 0x4000021, "template");
-graphene.registerAttribute("wrapTemplate", 0x4000020, "template");
-graphene.registerAttribute("ecPoint", 0x180);
 // Initializes the cloud HSM and returns a module object
 export function initHSM() {
     const Module = graphene.Module;
@@ -70,111 +58,22 @@ export function getEthereumKeyPair(session) {
         };
     }
 
-    // console.log("No Ethereum key pair found. Will use the HSM to create a new one...");
-
-    //     // 3. Generate new key pair using secp256k1
-        
-    // const publicKeyTemplate = {
-    //     // class: graphene.ObjectClass.PUBLIC_KEY,
-    //     // keyType: graphene.KeyType.EC,
-    //     // ecParams: Buffer.from("06052B8104000A", "hex"), // secp256k1 OID
-    //     // verify: true,
-    //     // label: KEY_LABEL,
-    //     // id: Buffer.from(KEY_ID),
-    //     private: false
-    //     // wrap: true, // allow this key to wrap other keys
-    //     // // enforce constraints on keys being wrapped
-    //     // wrapTemplate: [
-    //     //     {
-    //     //         type: sensitive, value: true,
-    //     //     },
-    //     //     {
-    //     //         type: extractable, value: true
-    //     //     }
-    //     // ],
-    // };
-
-
-    // console.log("Came here")
-
-
-    // const privateKeyTemplate = {
-    //     // class: graphene.ObjectClass.PRIVATE_KEY,
-    //     // keyType: graphene.KeyType.EC,
-    //     // label: KEY_LABEL,
-    //     // id: Buffer.from(KEY_ID),
-    //     // sign: true,
-    //     // extractable: false,
-    //     // unwrap: false,
-    //     sensitive: true,
-    //     // unwrapTemplate: [
-    //     //     {
-    //     //         type: sensitive, value: true,
-    //     //     },
-    //     //     {
-    //     //         type: extractable, value: false
-    //     //     }
-    //     // ],
-    //     private: true
-    // };
-
-    // console.log("Got here")
-
-    // const keyPair = session.generateKeyPair(
-    //     graphene.MechanismEnum.EC_KEY_PAIR_GEN,
-    //     publicKeyTemplate,
-    //     privateKeyTemplate
-    // );
-
-    // console.log("Reached here")
-
-    // return keyPair;
-
         // generate ECDSA key pair
-        console.log("generatring new address")
+        console.log("generating new address")
         var keys = session.generateKeyPair(graphene.KeyGenMechanism.EC, {
             keyType: graphene.KeyType.EC,
             id: Buffer.from(KEY_ID),
             token: true,
             verify: true,
-            // derive: true,
             paramsEC: graphene.NamedCurve.getByName("secp256k1").value,
-            // private: false
         }, {
             keyType: graphene.KeyType.EC,
             id: Buffer.from(KEY_ID),
             token: true,
             sign: true,
-            // derive: true
-            // private: true,
-            // sensitive: true
         });
 
-        // console.log("The keys => ", keys);
-
-        // return keys
-
-        privateKeys = session.find({
-            class: graphene.ObjectClass.PRIVATE_KEY,
-            keyType: graphene.KeyType.EC,
-            id: Buffer.from(KEY_ID)
-        });
-    
-        if (privateKeys.length > 0) {
-            const privateKey = privateKeys.items(0);
-            // Find the public key with the same ID
-            const publicKey = session.find({
-                class: graphene.ObjectClass.PUBLIC_KEY,
-                keyType: graphene.KeyType.EC,
-                id: Buffer.from(KEY_ID)
-            }).items(0);
-    
-            console.log("public key => ", publicKey)
-            return {
-                privateKey,
-                publicKey
-            };
-        }
+        return keys;
 
 }
 
@@ -182,7 +81,6 @@ export function deriveEthereumAddress(publicKey) {
  
     // 1. Extract EC point from HSM
     const ecPoint =  publicKey.getAttribute({pointEC: null}).pointEC
-    // const ecPoint = publicKey.getAttribute("ecPoint");
 
     // 2. Decode ASN.1 OCTET STRING
     const rawPoint = decodeEcPoint(ecPoint); // [0x04 || X || Y]
@@ -191,7 +89,6 @@ export function deriveEthereumAddress(publicKey) {
         throw new Error("Only uncompressed EC points are supported");
     }
 
-    graphene.to
     // 3. Drop 0x04 prefix and get the 64-byte public key
     const keyBytes = rawPoint.slice(1);
 
@@ -210,75 +107,6 @@ function decodeEcPoint(ecPointBuffer) {
     const len = ecPointBuffer[1];
     return ecPointBuffer.slice(2, 2 + len);
 }
-// Sign Ethereum message using HSM
-// export function signEthereumMessage(session, privateKey, message) {
-//     // Create the Ethereum personal message format
-//     const personalMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
-    
-//     // Hash the personal message
-//     const messageHash = keccak256('keccak256').update(Buffer.from(personalMessage, 'utf8')).digest();
-    
-//     // var sign = session.createSign("ECDSA_SHA256", privateKey);
-//     // sign.update("simple text 1");
-//     // sign.update("simple text 2");
-//     // var signature = sign.final();
-
-//     // Sign the hash using HSM - try different ECDSA mechanisms
-//     // let signer = session.createSign({ name: 'ECDSA' }, privateKey);
-//     // try {
-//     //     signer = session.createSign(graphene.Mechanism.ECDSA_SHA256, privateKey);
-//     // } catch (e) {
-//     //     try {
-//     //         signer = session.createSign(graphene.Mechanism.ECDSA, privateKey);
-//     //     } catch (e2) {
-//     //         // Use a basic mechanism object
-//     //         signer = session.createSign({ name: 'ECDSA' }, privateKey);
-//     //     }
-//     // }
-
-//     var sign = session.createSign("ECDSA", privateKey);
-// //     sign.update(messageHash);
-//     var signature = sign.once(messageHash);
-
-
-//     console.log("ECDSA signature (r, s):", signature.toString("hex"));
-
-
-//     // const signature = signer.once(messageHash);
-    
-//     // Convert signature to DER format and extract r, s values
-//     const derSignature = Buffer.from(signature, 'binary');
-    
-//     // Parse DER signature to get r and s values
-//     const { r, s } = parseDERSignature(derSignature);
-    
-//     // Determine v value (recovery bit)
-//     // For Ethereum, we need to determine the correct v value
-//     // This is a simplified approach - in production you'd want more robust recovery
-//     let v = 27; // Base value
-    
-   
-    
-//     return {
-//         r: '0x' + r.toString('hex'),
-//         s: '0x' + s.toString('hex'),
-//         v: v,
-//         signature: '0x' + r.toString('hex') + s.toString('hex').padStart(64, '0') + (v - 27).toString(16).padStart(2, '0')
-//     };
-// }
-
-
-
-// Helper function to decode ASN.1 OCTET STRING if needed, placeholder if not provided
-// In a real scenario, this would come from your HSM integration library.
-// function decodeEcPoint(ecPointBuffer) {
-//     // This is a placeholder. Your actual implementation from the HSM library
-//     // should correctly parse the ASN.1 OCTET STRING to get the raw EC point bytes.
-//     // For many HSMs, if `pointEC` is already the raw bytes, this function
-//     // might not be necessary, or it might just return the input.
-//     // Assuming ecPointBuffer is already the raw [0x04 || X || Y] buffer.
-//     return ecPointBuffer;
-// }
 
 
 /**
@@ -366,29 +194,6 @@ export function signEthereumMessage(session, privateKey, publicKey, message) {
     };
 }
 
-// Parse DER signature to extract r and s values
-function parseDERSignature(derSignature) {
-    // This is a simplified DER parser for ECDSA signatures
-    // In production, you'd want a more robust ASN.1 parser
-    
-    let offset = 2; // Skip sequence tag and length
-    
-    // Skip to r value
-    offset += 2; // Skip integer tag and length
-    const rLength = derSignature[offset];
-    offset += 1;
-    const r = derSignature.slice(offset, offset + rLength);
-    offset += rLength;
-    
-    // Skip to s value
-    offset += 2; // Skip integer tag and length
-    const sLength = derSignature[offset];
-    offset += 1;
-    const s = derSignature.slice(offset, offset + sLength);
-    
-    return { r, s };
-}
-
 // Verify Ethereum signature
 
 export function verifyEthereumSignature(message, signature, expectedAddress) {
@@ -407,8 +212,7 @@ export function verifyEthereumSignature(message, signature, expectedAddress) {
       
       // Derive address
       const recoveredAddress = '0x' + etherKeccak(publicKey).toString('hex').slice(-40);
-      console.log("recoveredAddress => ", recoveredAddress)
-      console.log("expectedAddress => ", expectedAddress)
+
 
       return recoveredAddress.toLowerCase() === expectedAddress.toLowerCase();
     } catch (error) {
@@ -446,26 +250,6 @@ function toBufferFromHexOrNumber(value) {
     throw new Error('Unsupported value type for buffer conversion');
 }
 
-// function rlpEncode(input) {
-//     if (Array.isArray(input)) {
-//         const encodedItems = input.map(rlpEncode);
-//         const payload = Buffer.concat(encodedItems);
-//         return Buffer.concat([encodeLength(payload.length, 0xc0), payload]);
-//     } else {
-//         const buf = toBufferFromHexOrNumber(input);
-//         if (buf.length === 1 && buf[0] < 0x80) return buf;
-//         return Buffer.concat([encodeLength(buf.length, 0x80), buf]);
-//     }
-// }
-
-function encodeLength(len, offset) {
-    if (len < 56) {
-        return Buffer.from([len + offset]);
-    } else {
-        const lenBuf = toBufferFromHexOrNumber(len);
-        return Buffer.concat([Buffer.from([offset + 55 + lenBuf.length]), lenBuf]);
-    }
-}
 
 function keccak256Hash(buf) {
     return keccak256('keccak256').update(buf).digest();
@@ -535,27 +319,6 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
     if (!params.from) {
         throw new Error('Missing params.from (sender address)');
     }
-    const balRes = await fetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            jsonrpc: '2.0',
-            id: 1,
-            method: 'eth_getBalance',
-            params: [params.from, 'latest']
-        })
-    });
-    const balJson = await balRes.json();
-    if (balJson.error) {
-        throw new Error(`RPC error fetching balance: ${balJson.error.code} ${balJson.error.message}`);
-    }
-    const balanceHex = balJson.result; // 0x...
-    const balanceWei = BigInt(balanceHex);
-    const wholeEth = balanceWei / (10n ** 18n);
-    const fracEth = (balanceWei % (10n ** 18n)).toString().padStart(18, '0').replace(/0+$/, '');
-    const balanceEthStr = fracEth.length ? `${wholeEth.toString()}.${fracEth}` : wholeEth.toString();
-    console.log(`From ${params.from} balance: wei=${balanceWei.toString()} (${balanceHex}), eth=${balanceEthStr}`);
-
     // Fetch the current gas price from the network
     const gasPriceRes = await fetch(rpcUrl, {
         method: 'POST',
@@ -613,10 +376,7 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
     ];
 
     const rlpUnsigned = rlpEncode(unsignedForSig);
-    console.log("rlpunsigned => ", rlpUnsigned);
     const msgHash = keccak256Hash(Buffer.from(rlpUnsigned.slice(2), 'hex'));
-
-    console.log("before v => ", )
 
     // Your signing function should return a recovery ID (recId)
     const { r, s, v } = signHashWithHsmAndComputeV(session, privateKey, publicKey, msgHash);
@@ -624,17 +384,9 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
     let finalSignatureBuffer = Buffer.concat([r, s, Buffer.from([v])]);
     let fullEthSignature = '0x' + finalSignatureBuffer.toString('hex');
 
-    console.log("before v => ", fullEthSignature)
-
 
     // Correctly calculate v using EIP-155
     const vFinal = BigInt(chainId) * 2n + 35n + BigInt(v);
-    console.log("vFinal:", vFinal);
-
-     finalSignatureBuffer = Buffer.concat([r, s, Buffer.from([Number(vFinal.valueOf())])]);
-     fullEthSignature = '0x' + finalSignatureBuffer.toString('hex');
-
-    console.log("after  v => ", fullEthSignature)
 
     const signed = [
         nonceBuf,
@@ -650,8 +402,6 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
 
     const rawTx = rlpEncode(signed).toString('hex');
 
-    console.log("Signed tx => ", rawTx);
-    // const rawTxHex = '0x' + rawTx;
 
     const res = await fetch(rpcUrl, {
         method: 'POST',
@@ -664,7 +414,6 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
         })
     });
     const json = await res.json();
-    console.log("json => ", json);
     if (json.error) {
         throw new Error(`RPC error: ${json.error.code} ${json.error.message}`);
     }
