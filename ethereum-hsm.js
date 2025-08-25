@@ -10,7 +10,6 @@ import {
 
 
   import { Buffer } from 'buffer'; // Node.js Buffer is often implicitly available, but good to be explicit
-  import { rlpEncode } from '@ethersproject/rlp';
   import pkg from '@ethersproject/rlp';
 const { rlpEncode } = pkg;
 
