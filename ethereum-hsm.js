@@ -498,7 +498,7 @@ function signHashWithHsmAndComputeV(session, privateKey, publicKey, hash32) {
             const recAdj = sWasHigh ? (rec ^ 1) : rec;
             const recovered = ecrecover(hash32, recAdj + 27, r, s);
             if (recovered.toString('hex') === pubXY.toString('hex')) {
-                v = 27 + recAdj;
+                v = recAdj;
                 break;
             }
         } catch (_) {}
@@ -535,7 +535,7 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
     const msgHash = keccak256Hash(rlpUnsigned);
 
     const { r, s, v } = signHashWithHsmAndComputeV(session, privateKey, publicKey, msgHash);
-    const recId = v - 27;
+    const recId = v;
     const vFinal = BigInt(chainId) * 2n + 35n + BigInt(recId);
 
     const signed = [
