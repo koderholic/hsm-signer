@@ -498,17 +498,24 @@ function signHashWithHsmAndComputeV(session, privateKey, publicKey, hash32) {
     }
 
     let v;
-    for (let rec = 0; rec < 2; rec++) {
+
+    for (let i = 0; i < 2; i++) {
         try {
-            // If S was flipped, flip recovery bit for comparison
-            const recAdj = sWasHigh ? (rec ^ 1) : rec;
-            const recovered = ecrecover(hash32, recAdj + 27, r, s);
-            if (recovered.toString('hex') === pubXY.toString('hex')) {
-                v = recAdj;
+            // ethUtil.ecrecover expects the message hash, v, r, and s
+            // The v value in ecrecover is 0 or 1, which internally gets converted to 27 or 28.
+            const recoveredPub = ecrecover(hash32, i, r, s);
+            // Compare the recovered public key with the actual public key from the HSM
+            if (recoveredPub.toString('hex') === pubXY.toString('hex')) {
+
+                v = i ; // Ethereum's v values are typically 27 or 28
                 break;
             }
-        } catch (_) {}
+        } catch (e) {
+            // Handle potential errors during recovery (e.g., invalid signature components)
+            console.warn(`Attempted recovery with v_candidate=${i} failed: ${e.message}`);
+        }
     }
+
     if (v === undefined) throw new Error('Could not determine recovery id (v)');
     return { r, s, v };
 }
