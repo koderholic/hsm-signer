@@ -531,6 +531,31 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
     const rpcUrl = process.env.RPC_URL;
     const chainId = params.chainId ?? 11155111;
 
+    // Fetch and log sender balance
+    if (!params.from) {
+        throw new Error('Missing params.from (sender address)');
+    }
+    const balRes = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'eth_getBalance',
+            params: [params.from, 'latest']
+        })
+    });
+    const balJson = await balRes.json();
+    if (balJson.error) {
+        throw new Error(`RPC error fetching balance: ${balJson.error.code} ${balJson.error.message}`);
+    }
+    const balanceHex = balJson.result; // 0x...
+    const balanceWei = BigInt(balanceHex);
+    const wholeEth = balanceWei / (10n ** 18n);
+    const fracEth = (balanceWei % (10n ** 18n)).toString().padStart(18, '0').replace(/0+$/, '');
+    const balanceEthStr = fracEth.length ? `${wholeEth.toString()}.${fracEth}` : wholeEth.toString();
+    console.log(`From ${params.from} balance: wei=${balanceWei.toString()} (${balanceHex}), eth=${balanceEthStr}`);
+
     // Fetch the current gas price from the network
     const gasPriceRes = await fetch(rpcUrl, {
         method: 'POST',

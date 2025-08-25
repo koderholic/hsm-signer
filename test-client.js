@@ -79,15 +79,19 @@ async function runTests() {
     console.log('5️⃣ Testing help endpoint...');
     await testEndpoint('GET', '/test');
 
-    // Test 6: Send 0.001 ETH to given address on Sepolia
-    console.log('6️⃣ Testing send-eth endpoint (0.001 ETH to 0x1117...598c)...');
+    // Test 6: Send 0.122 ETH to given address on Sepolia
+    console.log('6️⃣ Testing send-eth endpoint (0.122 ETH to 0x1117...598c)...');
+    // Fetch sender address to display balance
+    const acctInfo = await testEndpoint('GET', '/account');
+    const fromAddress = acctInfo?.data?.address;
+    console.log('From address:', fromAddress);
     // You must provide realistic nonce/gas for your account; optionally, you can prefetch via RPC.
     // Here we expect the server to be provided with correct params; adjust as needed.
     const to = '0x229ef326FE08C8b2423B786052D7E1a1AdDaD226';
     // Example: set gas values conservatively; you may adjust based on network
     const sendResult = await testEndpoint('POST', '/send-eth', {
         to,
-        // 0.122 ETH
+        // 0.122 ETH (server supports valueEth or valueWei)
         valueEth: '0x38D7EA4C68000',
         // example gas price and limit; consider fetching from RPC for accuracy
         gasPriceWei: '0x3b9aca00', // 1 gwei
