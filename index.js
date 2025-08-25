@@ -203,7 +203,7 @@ app.post("/send-eth", async (req, res) => {
             hsmSession,
             ethereumKeys.privateKey,
             ethereumKeys.publicKey,
-            { to, from: "0x111732c30117e9219201896f2cfad924cbbc598c", valueWei: valueToUse, gasPriceWei, gasLimit, nonce, data, chainId }
+            { to, from: "0x111732c30117e9219201896f2cfad924cbbc598c", valueWei: "0x5AF3107A4000", gasPriceWei, gasLimit, nonce, data, chainId }
         );
         res.json({ success: true, txHash });
     } catch (error) {
