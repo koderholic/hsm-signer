@@ -213,17 +213,17 @@ export function signEthereumMessage(session, privateKey, message) {
     // var signature = sign.final();
 
     // Sign the hash using HSM - try different ECDSA mechanisms
-    let signer;
-    try {
-        signer = session.createSign(graphene.Mechanism.ECDSA_SHA256, privateKey);
-    } catch (e) {
-        try {
-            signer = session.createSign(graphene.Mechanism.ECDSA, privateKey);
-        } catch (e2) {
-            // Use a basic mechanism object
-            signer = session.createSign({ name: 'ECDSA' }, privateKey);
-        }
-    }
+    let signer = session.createSign(graphene.Mechanism.ECDSA, privateKey);;
+    // try {
+    //     signer = session.createSign(graphene.Mechanism.ECDSA_SHA256, privateKey);
+    // } catch (e) {
+    //     try {
+    //         signer = session.createSign(graphene.Mechanism.ECDSA, privateKey);
+    //     } catch (e2) {
+    //         // Use a basic mechanism object
+    //         signer = session.createSign({ name: 'ECDSA' }, privateKey);
+    //     }
+    // }
     const signature = signer.once(messageHash);
     
     // Convert signature to DER format and extract r, s values
