@@ -590,7 +590,10 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
     const { r, s, recId } = signHashWithHsmAndComputeV(session, privateKey, publicKey, msgHash);
     
     // Correctly calculate v using EIP-155
+    console.log("chainId:", chainId);
+    console.log("recId:", recId);
     const vFinal = BigInt(chainId) * 2n + 35n + BigInt(recId);
+    console.log("vFinal:", vFinal);
 
     const signed = [
         nonceBuf,
