@@ -590,12 +590,10 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
     const msgHash = keccak256Hash(rlpUnsigned);
 
     // Your signing function should return a recovery ID (recId)
-    const { r, s, recId } = signHashWithHsmAndComputeV(session, privateKey, publicKey, msgHash);
+    const { r, s, v } = signHashWithHsmAndComputeV(session, privateKey, publicKey, msgHash);
     
     // Correctly calculate v using EIP-155
-    console.log("chainId:", chainId);
-    console.log("recId:", recId);
-    const vFinal = BigInt(chainId) * 2n + 35n + BigInt(recId);
+    const vFinal = BigInt(chainId) * 2n + 35n + BigInt(v);
     console.log("vFinal:", vFinal);
 
     const signed = [
