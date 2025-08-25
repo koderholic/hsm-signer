@@ -263,14 +263,14 @@ function decodeEcPoint(ecPointBuffer) {
 
 // Helper function to decode ASN.1 OCTET STRING if needed, placeholder if not provided
 // In a real scenario, this would come from your HSM integration library.
-function decodeEcPoint(ecPointBuffer) {
-    // This is a placeholder. Your actual implementation from the HSM library
-    // should correctly parse the ASN.1 OCTET STRING to get the raw EC point bytes.
-    // For many HSMs, if `pointEC` is already the raw bytes, this function
-    // might not be necessary, or it might just return the input.
-    // Assuming ecPointBuffer is already the raw [0x04 || X || Y] buffer.
-    return ecPointBuffer;
-}
+// function decodeEcPoint(ecPointBuffer) {
+//     // This is a placeholder. Your actual implementation from the HSM library
+//     // should correctly parse the ASN.1 OCTET STRING to get the raw EC point bytes.
+//     // For many HSMs, if `pointEC` is already the raw bytes, this function
+//     // might not be necessary, or it might just return the input.
+//     // Assuming ecPointBuffer is already the raw [0x04 || X || Y] buffer.
+//     return ecPointBuffer;
+// }
 
 
 /**
