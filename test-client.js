@@ -87,7 +87,7 @@ async function runTests() {
     // Example: set gas values conservatively; you may adjust based on network
     const sendResult = await testEndpoint('POST', '/send-eth', {
         to,
-        valueEth: '0.122',
+        valueEth: '0.121',
         // example gas price and limit; consider fetching from RPC for accuracy
         gasLimit: '0x5208',        // 21000
     });
