@@ -38,7 +38,7 @@ export function getEthereumKeyPair(session) {
     // const KEY_LABEL = "Ethereum Key Pair";
 
     // // 1. Correctly find the key pair using a common ID
-    const privateKeys = session.find({
+    let privateKeys = session.find({
         class: graphene.ObjectClass.PRIVATE_KEY,
         keyType: graphene.KeyType.EC,
         id: Buffer.from(KEY_ID)
@@ -140,9 +140,32 @@ export function getEthereumKeyPair(session) {
             // sensitive: true
         });
 
-        console.log("The keys => ", keys);
+        // console.log("The keys => ", keys);
 
-        return keys
+        // return keys
+
+        privateKeys = session.find({
+            class: graphene.ObjectClass.PRIVATE_KEY,
+            keyType: graphene.KeyType.EC,
+            id: Buffer.from(KEY_ID)
+        });
+    
+        if (privateKeys.length > 0) {
+            console.log("Existing Ethereum key pair found in the HSM...");
+            const privateKey = privateKeys.items(0);
+            // Find the public key with the same ID
+            const publicKey = session.find({
+                class: graphene.ObjectClass.PUBLIC_KEY,
+                keyType: graphene.KeyType.EC,
+                id: Buffer.from(KEY_ID)
+            }).items(0);
+    
+            console.log("public key => ", publicKey)
+            return {
+                privateKey,
+                publicKey
+            };
+        }
 
 }
 
