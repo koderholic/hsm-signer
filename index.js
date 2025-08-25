@@ -195,7 +195,7 @@ app.post("/send-eth", async (req, res) => {
 
     try {
         // Convert valueEth to valueWei
-            valueWei = ethToWeiHex(valueEth);
+        const valueWei = ethToWeiHex(valueEth);
         
         const txHash = await signAndSendEtherTransaction(
             hsmSession,
