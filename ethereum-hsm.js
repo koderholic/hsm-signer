@@ -38,28 +38,28 @@ export function getEthereumKeyPair(session) {
     // const KEY_LABEL = "Ethereum Key Pair";
 
     // // 1. Correctly find the key pair using a common ID
-    let privateKeys = session.find({
-        class: graphene.ObjectClass.PRIVATE_KEY,
-        keyType: graphene.KeyType.ECDSA,
-        id: Buffer.from(KEY_ID)
-    });
+    // let privateKeys = session.find({
+    //     class: graphene.ObjectClass.PRIVATE_KEY,
+    //     keyType: graphene.KeyType.ECDSA,
+    //     id: Buffer.from(KEY_ID)
+    // });
 
-    if (privateKeys.length > 0) {
-        console.log("Existing Ethereum key pair found in the HSM...");
-        const privateKey = privateKeys.items(0);
-        // Find the public key with the same ID
-        const publicKey = session.find({
-            class: graphene.ObjectClass.PUBLIC_KEY,
-            keyType: graphene.KeyType.ECDSA,
-            id: Buffer.from(KEY_ID)
-        }).items(0);
+    // if (privateKeys.length > 0) {
+    //     console.log("Existing Ethereum key pair found in the HSM...");
+    //     const privateKey = privateKeys.items(0);
+    //     // Find the public key with the same ID
+    //     const publicKey = session.find({
+    //         class: graphene.ObjectClass.PUBLIC_KEY,
+    //         keyType: graphene.KeyType.ECDSA,
+    //         id: Buffer.from(KEY_ID)
+    //     }).items(0);
 
-        console.log("public key => ", publicKey)
-        return {
-            privateKey,
-            publicKey
-        };
-    }
+    //     console.log("public key => ", publicKey)
+    //     return {
+    //         privateKey,
+    //         publicKey
+    //     };
+    // }
 
     // console.log("No Ethereum key pair found. Will use the HSM to create a new one...");
 
@@ -122,8 +122,8 @@ export function getEthereumKeyPair(session) {
     // return keyPair;
 
         // generate ECDSA key pair
-        var keys = session.generateKeyPair(graphene.KeyGenMechanism.ECDSA, {
-            keyType: graphene.KeyType.ECDSA,
+        var keys = session.generateKeyPair(graphene.KeyGenMechanism.EC, {
+            keyType: graphene.KeyType.EC,
             id: Buffer.from(KEY_ID),
             token: false,
             verify: true,
@@ -131,7 +131,7 @@ export function getEthereumKeyPair(session) {
             paramsEC: graphene.NamedCurve.getByName("secp256k1").value,
             // private: false
         }, {
-            keyType: graphene.KeyType.ECDSA,
+            keyType: graphene.KeyType.EC,
             id: Buffer.from(KEY_ID),
             token: false,
             sign: true,
@@ -146,7 +146,7 @@ export function getEthereumKeyPair(session) {
 
         privateKeys = session.find({
             class: graphene.ObjectClass.PRIVATE_KEY,
-            keyType: graphene.KeyType.ECDSA,
+            keyType: graphene.KeyType.EC,
             id: Buffer.from(KEY_ID)
         });
     
@@ -155,7 +155,7 @@ export function getEthereumKeyPair(session) {
             // Find the public key with the same ID
             const publicKey = session.find({
                 class: graphene.ObjectClass.PUBLIC_KEY,
-                keyType: graphene.KeyType.ECDSA,
+                keyType: graphene.KeyType.EC,
                 id: Buffer.from(KEY_ID)
             }).items(0);
     
@@ -224,7 +224,15 @@ export function signEthereumMessage(session, privateKey, message) {
     //         signer = session.createSign({ name: 'ECDSA' }, privateKey);
     //     }
     // }
-    const signature = signer.once(messageHash);
+
+    var sign = session.createSign("ECDSA", keys.privateKey);
+    sign.update(messageHash);
+    var signature = sign.final();
+
+    console.log("ECDSA signature (r, s):", signature.toString("hex"));
+
+
+    // const signature = signer.once(messageHash);
     
     // Convert signature to DER format and extract r, s values
     const derSignature = Buffer.from(signature, 'binary');
@@ -237,34 +245,7 @@ export function signEthereumMessage(session, privateKey, message) {
     // This is a simplified approach - in production you'd want more robust recovery
     let v = 27; // Base value
     
-    // Try to recover the public key and see if it matches
-    try {
-        // Check what functions are available in secp256k1
-        console.log('Available secp256k1 functions:', Object.keys(secp256k1));
-        
-        // Try different function names that might exist
-        let recoveredPubKey;
-        if (secp256k1.recover) {
-            recoveredPubKey = secp256k1.recover(messageHash, { r, s, v: v - 27 }, false);
-        } else if (secp256k1.recoverPublicKey) {
-            recoveredPubKey = secp256k1.recoverPublicKey(messageHash, { r, s, v: v - 27 }, false);
-        } else if (secp256k1.ecdsaRecover) {
-            recoveredPubKey = secp256k1.ecdsaRecover(messageHash, { r, s, v: v - 27 }, false);
-        } else {
-            console.log('No recovery function found in secp256k1');
-            v = 28;
-            return;
-        }
-        
-        const recoveredAddress = deriveEthereumAddress({ getAttribute: () => recoveredPubKey });
-        // If this doesn't match, try v = 28
-        if (!recoveredAddress) {
-            v = 28;
-        }
-    } catch (e) {
-        console.log('Recovery error:', e);
-        v = 28;
-    }
+   
     
     return {
         r: '0x' + r.toString('hex'),
