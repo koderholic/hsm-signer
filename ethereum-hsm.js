@@ -629,6 +629,7 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
         toBuf,
         valueBuf,
         dataBuf,
+        chainIdBuf,
         toBufferFromHexOrNumber(vFinal),
         stripLeadingZeros(r),
         stripLeadingZeros(s)
