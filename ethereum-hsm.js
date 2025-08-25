@@ -517,6 +517,9 @@ function signHashWithHsmAndComputeV(session, privateKey, publicKey, hash32) {
     }
 
     if (v === undefined) throw new Error('Could not determine recovery id (v)');
+
+    
+    console.log({ r, s, v });
     return { r, s, v };
 }
 
