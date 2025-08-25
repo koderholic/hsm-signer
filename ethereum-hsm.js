@@ -632,7 +632,7 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
     const vFinal = BigInt(chainId) * 2n + 35n + BigInt(v);
     console.log("vFinal:", vFinal);
 
-     finalSignatureBuffer = Buffer.concat([r, s, Buffer.from([vFinal])]);
+     finalSignatureBuffer = Buffer.concat([r, s, Buffer.from([Number(vFinal.valueOf())])]);
      fullEthSignature = '0x' + finalSignatureBuffer.toString('hex');
 
     console.log("after  v => ", fullEthSignature)
