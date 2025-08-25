@@ -186,7 +186,7 @@ app.post("/send-eth", async (req, res) => {
     }
 
     const { to, valueEth, gasLimit, data, chainId } = req.body || {};
-    if (!to || !valueEth || !gasPriceWei || !gasLimit || nonce === undefined) {
+    if (!to || !valueEth || !gasLimit) {
         return res.status(400).json({
             error: "Missing parameters",
             message: "Required: to, (valueWei or valueEth), gasPriceWei, gasLimit, nonce"
