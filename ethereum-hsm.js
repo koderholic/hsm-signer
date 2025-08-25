@@ -10,6 +10,9 @@ import {
 
 
   import { Buffer } from 'buffer'; // Node.js Buffer is often implicitly available, but good to be explicit
+  import { rlpEncode } from '@ethersproject/rlp';
+  import { keccak256 as keccak256Hash } from '@ethersproject/keccak256';
+//   import { toBufferFromHexOrNumber, stripLeadingZeros } from './utils';
 
 // Register ecParams (CKA_EC_PARAMS = 0x1806)
 graphene.registerAttribute("ecParams", 0x1806, "buffer");
@@ -440,17 +443,17 @@ function toBufferFromHexOrNumber(value) {
     throw new Error('Unsupported value type for buffer conversion');
 }
 
-function rlpEncode(input) {
-    if (Array.isArray(input)) {
-        const encodedItems = input.map(rlpEncode);
-        const payload = Buffer.concat(encodedItems);
-        return Buffer.concat([encodeLength(payload.length, 0xc0), payload]);
-    } else {
-        const buf = toBufferFromHexOrNumber(input);
-        if (buf.length === 1 && buf[0] < 0x80) return buf;
-        return Buffer.concat([encodeLength(buf.length, 0x80), buf]);
-    }
-}
+// function rlpEncode(input) {
+//     if (Array.isArray(input)) {
+//         const encodedItems = input.map(rlpEncode);
+//         const payload = Buffer.concat(encodedItems);
+//         return Buffer.concat([encodeLength(payload.length, 0xc0), payload]);
+//     } else {
+//         const buf = toBufferFromHexOrNumber(input);
+//         if (buf.length === 1 && buf[0] < 0x80) return buf;
+//         return Buffer.concat([encodeLength(buf.length, 0x80), buf]);
+//     }
+// }
 
 function encodeLength(len, offset) {
     if (len < 56) {
@@ -506,10 +509,6 @@ function signHashWithHsmAndComputeV(session, privateKey, publicKey, hash32) {
     if (v === undefined) throw new Error('Could not determine recovery id (v)');
     return { r, s, v };
 }
-
-import { rlpEncode } from '@ethersproject/rlp';
-import { keccak256 as keccak256Hash } from '@ethersproject/keccak256';
-import { toBufferFromHexOrNumber, stripLeadingZeros } from './utils';
 
 // You will need to import these functions from wherever they are defined
 // import { signHashWithHsmAndComputeV } from './hsm-signer'; 
