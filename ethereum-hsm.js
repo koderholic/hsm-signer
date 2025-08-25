@@ -129,7 +129,7 @@ export function getEthereumKeyPair(session) {
         var keys = session.generateKeyPair(graphene.KeyGenMechanism.EC, {
             keyType: graphene.KeyType.EC,
             id: Buffer.from(KEY_ID),
-            token: false,
+            token: true,
             verify: true,
             // derive: true,
             paramsEC: graphene.NamedCurve.getByName("secp256k1").value,
@@ -137,7 +137,7 @@ export function getEthereumKeyPair(session) {
         }, {
             keyType: graphene.KeyType.EC,
             id: Buffer.from(KEY_ID),
-            token: false,
+            token: true,
             sign: true,
             // derive: true
             // private: true,
