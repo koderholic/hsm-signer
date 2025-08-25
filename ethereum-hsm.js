@@ -128,7 +128,7 @@ export function getEthereumKeyPair(session) {
             token: false,
             verify: true,
             // derive: true,
-            paramsECDSA: graphene.NamedCurve.getByName("secp256k1").value,
+            ecParams: graphene.NamedCurve.getByName("secp256k1").value,
             // private: false
         }, {
             keyType: graphene.KeyType.EC,
