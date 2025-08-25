@@ -40,7 +40,7 @@ export function getEthereumKeyPair(session) {
     // // 1. Correctly find the key pair using a common ID
     let privateKeys = session.find({
         class: graphene.ObjectClass.PRIVATE_KEY,
-        keyType: graphene.KeyType.EC,
+        keyType: graphene.KeyType.ECDSA,
         id: Buffer.from(KEY_ID)
     });
 
@@ -50,7 +50,7 @@ export function getEthereumKeyPair(session) {
         // Find the public key with the same ID
         const publicKey = session.find({
             class: graphene.ObjectClass.PUBLIC_KEY,
-            keyType: graphene.KeyType.EC,
+            keyType: graphene.KeyType.ECDSA,
             id: Buffer.from(KEY_ID)
         }).items(0);
 
@@ -122,8 +122,8 @@ export function getEthereumKeyPair(session) {
     // return keyPair;
 
         // generate ECDSA key pair
-        var keys = session.generateKeyPair(graphene.KeyGenMechanism.EC, {
-            keyType: graphene.KeyType.EC,
+        var keys = session.generateKeyPair(graphene.KeyGenMechanism.ECDSA, {
+            keyType: graphene.KeyType.ECDSA,
             id: Buffer.from(KEY_ID),
             token: false,
             verify: true,
@@ -131,7 +131,7 @@ export function getEthereumKeyPair(session) {
             paramsEC: graphene.NamedCurve.getByName("secp256k1").value,
             // private: false
         }, {
-            keyType: graphene.KeyType.EC,
+            keyType: graphene.KeyType.ECDSA,
             id: Buffer.from(KEY_ID),
             token: false,
             sign: true,
@@ -146,17 +146,16 @@ export function getEthereumKeyPair(session) {
 
         privateKeys = session.find({
             class: graphene.ObjectClass.PRIVATE_KEY,
-            keyType: graphene.KeyType.EC,
+            keyType: graphene.KeyType.ECDSA,
             id: Buffer.from(KEY_ID)
         });
     
         if (privateKeys.length > 0) {
-            console.log("Existing Ethereum key pair found in the HSM...");
             const privateKey = privateKeys.items(0);
             // Find the public key with the same ID
             const publicKey = session.find({
                 class: graphene.ObjectClass.PUBLIC_KEY,
-                keyType: graphene.KeyType.EC,
+                keyType: graphene.KeyType.ECDSA,
                 id: Buffer.from(KEY_ID)
             }).items(0);
     
