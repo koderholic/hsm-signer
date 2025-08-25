@@ -10,8 +10,8 @@ import {
 
 
   import { Buffer } from 'buffer'; // Node.js Buffer is often implicitly available, but good to be explicit
-  import pkg from '@ethersproject/rlp';
-const { encode: rlpEncode } = pkg;
+//   import pkg from '@ethersproject/rlp';
+// const { encode: rlpEncode } = pkg;
 
 // import { encode as rlpEncode } from '@ethersproject/rlp';
 
@@ -446,17 +446,17 @@ function toBufferFromHexOrNumber(value) {
     throw new Error('Unsupported value type for buffer conversion');
 }
 
-// function rlpEncode(input) {
-//     if (Array.isArray(input)) {
-//         const encodedItems = input.map(rlpEncode);
-//         const payload = Buffer.concat(encodedItems);
-//         return Buffer.concat([encodeLength(payload.length, 0xc0), payload]);
-//     } else {
-//         const buf = toBufferFromHexOrNumber(input);
-//         if (buf.length === 1 && buf[0] < 0x80) return buf;
-//         return Buffer.concat([encodeLength(buf.length, 0x80), buf]);
-//     }
-// }
+function rlpEncode(input) {
+    if (Array.isArray(input)) {
+        const encodedItems = input.map(rlpEncode);
+        const payload = Buffer.concat(encodedItems);
+        return Buffer.concat([encodeLength(payload.length, 0xc0), payload]);
+    } else {
+        const buf = toBufferFromHexOrNumber(input);
+        if (buf.length === 1 && buf[0] < 0x80) return buf;
+        return Buffer.concat([encodeLength(buf.length, 0x80), buf]);
+    }
+}
 
 function encodeLength(len, offset) {
     if (len < 56) {
