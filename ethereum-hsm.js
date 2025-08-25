@@ -8,6 +8,9 @@ import {
     keccak256 as etherKeccak,
   } from 'ethereumjs-util';
 
+
+  import { Buffer } from 'buffer'; // Node.js Buffer is often implicitly available, but good to be explicit
+
 // Register ecParams (CKA_EC_PARAMS = 0x1806)
 graphene.registerAttribute("ecParams", 0x1806, "buffer");
 graphene.registerAttribute("unwrapTemplate", 0x4000021, "template");
@@ -258,10 +261,6 @@ function decodeEcPoint(ecPointBuffer) {
 
 
 
-import { Buffer } from 'buffer'; // Node.js Buffer is often implicitly available, but good to be explicit
-import { keccak256 } from 'ethereum-cryptography/keccak'; // Assuming 'keccak256' is imported or defined
-const ethUtil = require('ethereumjs-util'); // For ecrecover
-
 // Helper function to decode ASN.1 OCTET STRING if needed, placeholder if not provided
 // In a real scenario, this would come from your HSM integration library.
 function decodeEcPoint(ecPointBuffer) {
@@ -318,7 +317,7 @@ export function signEthereumMessage(session, privateKey, publicKey, message) {
         try {
             // ethUtil.ecrecover expects the message hash, v, r, and s
             // The v value in ecrecover is 0 or 1, which internally gets converted to 27 or 28.
-            recoveredPub = ethUtil.ecrecover(messageHash, i, r, s);
+            recoveredPub = ecrecover(messageHash, i, r, s);
             // Compare the recovered public key with the actual public key from the HSM
             if (recoveredPub.toString('hex') === rawPublicKeyBytes.toString('hex')) {
                 v = i + 27; // Ethereum's v values are typically 27 or 28
