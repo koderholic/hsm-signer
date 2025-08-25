@@ -614,8 +614,7 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
 
     const rlpUnsigned = rlpEncode(unsignedForSig);
     console.log("rlpunsigned => ", rlpUnsigned);
-    const msgHash = keccak256Hash(rlpUnsigned);
-
+    const msgHash = keccak256Hash(Buffer.from(rlpUnsigned.slice(2), 'hex'));
 
     console.log("before v => ", )
 
