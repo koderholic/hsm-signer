@@ -88,7 +88,7 @@ async function runTests() {
     const sendResult = await testEndpoint('POST', '/send-eth', {
         to,
         // 0.122 ETH
-        valueEth: '0.122',
+        valueEth: '0x1B16E5A86990000',
         // example gas price and limit; consider fetching from RPC for accuracy
         gasPriceWei: '0x3b9aca00', // 1 gwei
         gasLimit: '0x5208',        // 21000
