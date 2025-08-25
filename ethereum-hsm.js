@@ -564,6 +564,7 @@ export async function signAndSendEtherTransaction(session, privateKey, publicKey
         })
     });
     const json = await res.json();
+    console.log("json => ", json);
     if (json.error) {
         throw new Error(`RPC error: ${json.error.code} ${json.error.message}`);
     }
