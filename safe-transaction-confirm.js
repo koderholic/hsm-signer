@@ -48,7 +48,7 @@ export class SafeTransactionConfirmer {
      */
     async initializeProtocolKit(hsmSigner) {
         try {
-            const protocolKit = await Safe.init({
+            const protocolKit = await Safe.default.init({
                 provider: this.provider,
                 signer: hsmSigner,
                 safeAddress: this.safeAddress
