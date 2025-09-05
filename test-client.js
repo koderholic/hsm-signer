@@ -61,7 +61,7 @@ async function runTests() {
     if (signResult.success && signResult.data.signature) {
         console.log('4️⃣ Testing signature verification...');
         const verifyResult = await testEndpoint('POST', '/verify', {
-            message: 'Hello, Ethereum HSM!',
+            message: '0xa7872ddb2bc7d7cc097671bc31e2eee8d448e2be3d0310a01a8acf7ccb8211e8',
             signature: signResult.data.signature,
             address: signResult.data.address
         });
