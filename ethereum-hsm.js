@@ -121,15 +121,15 @@ function decodeEcPoint(ecPointBuffer) {
  */
 export function signEthereumMessage(session, privateKey, publicKey, message) {
     // 1. Create the Ethereum personal message format
-    const personalMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
+    // const personalMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
     
     // 2. Hash the personal message using Keccak-256
-    const messageHash = keccak256('keccak256').update(Buffer.from(personalMessage, 'utf8')).digest();
+    // const messageHash = keccak256('keccak256').update(Buffer.from(personalMessage, 'utf8')).digest();
     
     // 3. Sign the message hash using the HSM
     // Ensure the mechanism is 'ECDSA' for raw secp256k1 signatures
     const sign = session.createSign("ECDSA", privateKey);
-    const signatureRS = sign.once(messageHash); // signatureRS will be a Buffer (r || s)
+    const signatureRS = sign.once(message); // signatureRS will be a Buffer (r || s)
     
     console.log("Raw ECDSA signature (r || s):", signatureRS.toString("hex"));
 
