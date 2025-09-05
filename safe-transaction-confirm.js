@@ -190,8 +190,8 @@ export class SafeTransactionConfirmer {
                     signerAddress: this.signerAddress
                 });
                 
-                await this.apiKit.confirmTransaction(safeTxHash, "0x92496a754c50c092f3b4d9247d3cfd4fdd32003c0d5da365f5d03b4cfa08431156f161484b92da28ed196b101f56ea441f349f1a607358a17b5bde05478ace7b04");
-                // await this.apiKit.confirmTransaction(safeTxHash, signature);
+                // await this.apiKit.confirmTransaction(safeTxHash, "0x92496a754c50c092f3b4d9247d3cfd4fdd32003c0d5da365f5d03b4cfa08431156f161484b92da28ed196b101f56ea441f349f1a607358a17b5bde05478ace7b04");
+                await this.apiKit.confirmTransaction(safeTxHash, signature);
             } catch (apiError) {
                 console.error('❌ Safe API Error Details:', apiError);
                 console.error('❌ Error response:', apiError.response?.data || 'No response data');
