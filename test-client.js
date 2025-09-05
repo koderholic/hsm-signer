@@ -54,7 +54,7 @@ async function runTests() {
     // Test 3: Sign a message
     console.log('3️⃣ Testing message signing...');
     const signResult = await testEndpoint('POST', '/sign', {
-        message: 'Hello, Ethereum HSM!'
+        message: '0xa7872ddb2bc7d7cc097671bc31e2eee8d448e2be3d0310a01a8acf7ccb8211e8'
     });
     
     // Test 4: Verify signature (if signing was successful)
