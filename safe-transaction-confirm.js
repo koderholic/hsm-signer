@@ -37,8 +37,32 @@ export class SafeTransactionConfirmer {
             apiKey: this.apiKey
         });
         
-        // Provider for Protocol Kit
-        this.provider = new ethers.JsonRpcProvider(this.rpcUrl);
+        // Provider for Protocol Kit - create EIP-1193 compatible provider
+        this.provider = this.createEIP1193Provider(this.rpcUrl);
+    }
+
+    /**
+     * Create an EIP-1193 compatible provider from RPC URL
+     * @param {string} rpcUrl - RPC URL
+     * @returns {Object} EIP-1193 compatible provider
+     */
+    createEIP1193Provider(rpcUrl) {
+        const ethersProvider = new ethers.JsonRpcProvider(rpcUrl);
+        
+        return {
+            request: async ({ method, params }) => {
+                try {
+                    const result = await ethersProvider.send(method, params || []);
+                    return result;
+                } catch (error) {
+                    throw new Error(`Provider request failed: ${error.message}`);
+                }
+            },
+            on: () => {}, // No-op for event listeners
+            removeListener: () => {}, // No-op for event listeners
+            isMetaMask: false,
+            isConnected: () => true
+        };
     }
 
     /**
