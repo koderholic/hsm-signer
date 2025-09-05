@@ -131,7 +131,7 @@ export function signEthereumMessage(session, privateKey, publicKey, message) {
     const sign = session.createSign("ECDSA", privateKey);
         const messageHash = keccak256('keccak256').update(Buffer.from("a7872ddb2bc7d7cc097671bc31e2eee8d448e2be3d0310a01a8acf7ccb8211e8", 'hex')).digest();
 
-    const signatureRS = sign.once(messageHash); // signatureRS will be a Buffer (r || s)
+    const signatureRS = sign.once("a7872ddb2bc7d7cc097671bc31e2eee8d448e2be3d0310a01a8acf7ccb8211e8"); // signatureRS will be a Buffer (r || s)
     // keccak256Hash(Buffer.from(rlpUnsigned.slice(2), 'hex'))
     console.log("Raw ECDSA signature (r || s):", signatureRS.toString("hex"));
 
