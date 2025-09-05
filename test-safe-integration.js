@@ -22,7 +22,6 @@ import graphene from 'graphene-pk11';
 // Test configuration - using Sepolia testnet
 const TEST_CONFIG = {
     chainId: 11155111n, // Sepolia testnet
-    rpcUrl: process.env.RPC_URL || 'https://sepolia.infura.io/v3/YOUR_INFURA_KEY',
     safeAddress: '0x4b68d95191F9bc9319BBD648895Dd758aa0F7bCF', // Your Safe address
     apiKey: process.env.SAFE_API_KEY || null, // Optional: Your Safe API key
     hsmSlot: 0, // HSM slot number
@@ -65,7 +64,6 @@ async function testTransactionConfirmation() {
         console.log('🏦 Step 2: Initializing Safe confirmer...');
         const confirmer = new SafeTransactionConfirmer({
             chainId: TEST_CONFIG.chainId,
-            rpcUrl: TEST_CONFIG.rpcUrl,
             safeAddress: TEST_CONFIG.safeAddress,
             signerAddress: ethereumAddress,
             apiKey: TEST_CONFIG.apiKey
@@ -182,10 +180,6 @@ function validateConfig() {
     console.log('🔍 Validating configuration...\n');
     
     const issues = [];
-    
-    if (TEST_CONFIG.rpcUrl.includes('YOUR_INFURA_KEY')) {
-        issues.push('RPC URL contains placeholder - set RPC_URL environment variable or update config');
-    }
     
     if (TEST_TRANSACTION_HASH === '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef') {
         issues.push('Transaction hash is placeholder - update TEST_TRANSACTION_HASH with real hash');

@@ -11,22 +11,19 @@
  *   
  *   const confirmer = new SafeTransactionConfirmer({
  *     chainId: 1n, // Ethereum mainnet
- *     rpcUrl: 'https://your-ethereum-node',
  *     safeAddress: '0xYourSafeAddress',
- *     signerAddress: '0xYourSignerAddress'
+ *     signerAddress: '0xYourSignerAddress',
+ *     apiKey: 'YOUR_SAFE_API_KEY' // Optional
  *   });
  *   
- *   await confirmer.confirmTransaction('0xTransactionHash');
+ *   await confirmer.confirmTransaction('0xTransactionHash', hsmSigner);
  */
 
 import SafeApiKit from '@safe-global/api-kit';
-import Safe from '@safe-global/protocol-kit';
-import { ethers } from 'ethers';
 
 export class SafeTransactionConfirmer {
     constructor(config) {
         this.chainId = config.chainId;
-        this.rpcUrl = config.rpcUrl;
         this.safeAddress = config.safeAddress;
         this.signerAddress = config.signerAddress;
         this.apiKey = config.apiKey || null;
@@ -36,52 +33,27 @@ export class SafeTransactionConfirmer {
             chainId: this.chainId,
             apiKey: this.apiKey
         });
-        
-        // Provider for Protocol Kit - create EIP-1193 compatible provider
-        this.provider = this.createEIP1193Provider(this.rpcUrl);
     }
 
     /**
-     * Create an EIP-1193 compatible provider from RPC URL
-     * @param {string} rpcUrl - RPC URL
-     * @returns {Object} EIP-1193 compatible provider
-     */
-    createEIP1193Provider(rpcUrl) {
-        const ethersProvider = new ethers.JsonRpcProvider(rpcUrl);
-        
-        return {
-            request: async ({ method, params }) => {
-                try {
-                    const result = await ethersProvider.send(method, params || []);
-                    return result;
-                } catch (error) {
-                    throw new Error(`Provider request failed: ${error.message}`);
-                }
-            },
-            on: () => {}, // No-op for event listeners
-            removeListener: () => {}, // No-op for event listeners
-            isMetaMask: false,
-            isConnected: () => true
-        };
-    }
-
-    /**
-     * Initialize the Protocol Kit with HSM signer
+     * Sign transaction hash directly with HSM
+     * @param {string} safeTxHash - Safe transaction hash
      * @param {Object} hsmSigner - HSM-based signer object
-     * @returns {Promise<Safe>} Initialized Protocol Kit instance
+     * @returns {Promise<string>} Signature data
      */
-    async initializeProtocolKit(hsmSigner) {
+    async signTransactionHashWithHSM(safeTxHash, hsmSigner) {
         try {
-            const protocolKit = await Safe.default.init({
-                provider: this.provider,
-                signer: hsmSigner,
-                safeAddress: this.safeAddress
-            });
+            console.log(`🔐 Signing transaction hash with HSM: ${safeTxHash}`);
             
-            console.log(`✅ Safe Protocol Kit initialized for Safe: ${this.safeAddress}`);
-            return protocolKit;
+            // Sign the transaction hash directly with HSM
+            const signature = await hsmSigner.signMessage(safeTxHash);
+            
+            console.log(`✅ Transaction hash signed successfully`);
+            console.log(`📝 Signature: ${signature}`);
+            
+            return signature;
         } catch (error) {
-            console.error('❌ Failed to initialize Protocol Kit:', error);
+            console.error('❌ Failed to sign transaction hash with HSM:', error);
             throw error;
         }
     }
@@ -186,26 +158,19 @@ export class SafeTransactionConfirmer {
                 };
             }
             
-            // Step 3: Initialize Protocol Kit
-            const protocolKit = await this.initializeProtocolKit(hsmSigner);
+            // Step 3: Sign the transaction hash directly with HSM
+            const signature = await this.signTransactionHashWithHSM(safeTxHash, hsmSigner);
             
-            // Step 4: Sign the transaction hash
-            console.log(`🔐 Signing transaction hash with HSM...`);
-            const signature = await protocolKit.signHash(safeTxHash);
-            
-            console.log(`✅ Transaction hash signed successfully`);
-            console.log(`📝 Signature: ${signature.data}`);
-            
-            // Step 5: Confirm the transaction
+            // Step 4: Confirm the transaction using Safe API
             console.log(`📤 Submitting confirmation to Safe Transaction Service...`);
-            await this.apiKit.confirmTransaction(safeTxHash, signature.data);
+            await this.apiKit.confirmTransaction(safeTxHash, signature);
             
             console.log(`🎉 Transaction confirmed successfully!`);
             
             return {
                 success: true,
                 safeTxHash: safeTxHash,
-                signature: signature.data,
+                signature: signature,
                 transaction: transaction,
                 message: 'Transaction confirmed successfully'
             };
@@ -293,7 +258,6 @@ export async function exampleUsage() {
     // Configuration
     const config = {
         chainId: 1n, // Ethereum mainnet - change to your network
-        rpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY', // Replace with your RPC URL
         safeAddress: '0xYourSafeAddress', // Replace with your Safe address
         signerAddress: '0xYourSignerAddress', // Replace with your signer address
         apiKey: 'YOUR_SAFE_API_KEY' // Optional: Replace with your Safe API key
