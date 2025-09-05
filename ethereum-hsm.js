@@ -129,9 +129,7 @@ export function signEthereumMessage(session, privateKey, publicKey, message) {
     // 3. Sign the message hash using the HSM
     // Ensure the mechanism is 'ECDSA' for raw secp256k1 signatures
     const sign = session.createSign("ECDSA", privateKey);
-    const signatureRS = sign.once("0x77041cd7e53acc2321ac79aebff379379b6cd9e52605acf0608b27cede31e1cb5d356fe9146edc776265c7339edaa75ef773af713049ca54420d3c54db436d21"); 
-
-// signatureRS will be a Buffer (r || s)
+    const signatureRS = sign.once(Buffer.from(message, 'utf8')); // signatureRS will be a Buffer (r || s)
     
     console.log("Raw ECDSA signature (r || s):", signatureRS.toString("hex"));
 
