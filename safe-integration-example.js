@@ -187,7 +187,7 @@ class HSMSafeIntegration {
             return result;
             
         } catch (error) {
-            console.error('❌ Failed to confirm transaction:', error);
+            console.error('❌ Failed to confirm transaction---:', error);
             throw error;
         }
     }
