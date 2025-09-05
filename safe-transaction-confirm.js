@@ -163,7 +163,41 @@ export class SafeTransactionConfirmer {
             
             // Step 4: Confirm the transaction using Safe API
             console.log(`📤 Submitting confirmation to Safe Transaction Service...`);
-            await this.apiKit.confirmTransaction(safeTxHash, signature);
+            console.log(`📝 Signature to submit: ${signature}`);
+            console.log(`📝 Signature length: ${signature.length}`);
+            console.log(`📝 Safe transaction hash: ${safeTxHash}`);
+            console.log(`📝 Safe address: ${this.safeAddress}`);
+            console.log(`📝 Signer address: ${this.signerAddress}`);
+            
+            try {
+                // The Safe API Kit confirmTransaction method expects:
+                // confirmTransaction(safeTxHash: string, signature: string, options?: { safeTxHash?: string })
+                
+                // Check if signature is in the right format (should be 0x prefixed hex string)
+                if (!signature.startsWith('0x')) {
+                    throw new Error('Signature must be 0x prefixed hex string');
+                }
+                
+                // Check signature length (should be 65 bytes = 130 hex chars + 0x = 132 chars)
+                if (signature.length !== 132) {
+                    console.warn(`⚠️  Signature length is ${signature.length}, expected 132 (65 bytes)`);
+                }
+                
+                console.log(`📝 Confirmation data:`, {
+                    safeTxHash: safeTxHash,
+                    signature: signature,
+                    signatureLength: signature.length,
+                    signerAddress: this.signerAddress
+                });
+                
+                await this.apiKit.confirmTransaction(safeTxHash, signature);
+            } catch (apiError) {
+                console.error('❌ Safe API Error Details:', apiError);
+                console.error('❌ Error response:', apiError.response?.data || 'No response data');
+                console.error('❌ Error status:', apiError.response?.status || 'No status');
+                console.error('❌ Error message:', apiError.message);
+                throw apiError;
+            }
             
             console.log(`🎉 Transaction confirmed successfully!`);
             
