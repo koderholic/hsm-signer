@@ -160,7 +160,7 @@ export function signEthereumMessage(session, privateKey, publicKey, message) {
                 console.log("recoveredPub == > ", recoveredPub)
                 console.log("rawPublicKeyBytes == > ", rawPublicKeyBytes.toString('hex'))
 
-               v = i + 27; // Ethereum's v values are typically 27 or 28
+               v = i + 27 + 4; // Ethereum's v values are typically 27 or 28
             //    v = i; // Ethereum's v values are typically 27 or 28
             //  v = BigInt(chainId) * 2n + 35n + BigInt(v);
             
