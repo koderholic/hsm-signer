@@ -129,12 +129,10 @@ export function signEthereumMessage(session, privateKey, publicKey, message) {
     // 3. Sign the message hash using the HSM
     // Ensure the mechanism is 'ECDSA' for raw secp256k1 signatures
     const sign = session.createSign("ECDSA", privateKey);
-        // const messageHash = keccak256('keccak256').update(Buffer.from("a7872ddb2bc7d7cc097671bc31e2eee8d448e2be3d0310a01a8acf7ccb8211e8", 'hex')).digest();
 
-        const messageHash = Buffer.from("a7872ddb2bc7d7cc097671bc31e2eee8d448e2be3d0310a01a8acf7ccb8211e8", 'hex');
+    const messageHash = Buffer.from(message.slice(2), 'hex');
     const signatureRS = sign.once(messageHash); // signatureRS will be a Buffer (r || s)
     // keccak256Hash(Buffer.from(rlpUnsigned.slice(2), 'hex'))
-    console.log("Raw ECDSA signature (r || s):", signatureRS.toString("hex"));
 
     // 4. Extract r and s components (each 32 bytes for secp256k1)
     const r = signatureRS.subarray(0, 32);
@@ -164,8 +162,6 @@ export function signEthereumMessage(session, privateKey, publicKey, message) {
                 console.log("rawPublicKeyBytes == > ", rawPublicKeyBytes.toString('hex'))
 
                v = i + 27; // Ethereum's v values are typically 27 or 28
-            //    v = i; // Ethereum's v values are typically 27 or 28
-            //  v = BigInt(chainId) * 2n + 35n + BigInt(v);
             
                 break;
             }
