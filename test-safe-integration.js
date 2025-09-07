@@ -22,13 +22,13 @@ import graphene from 'graphene-pk11';
 // Test configuration - using Sepolia testnet
 const TEST_CONFIG = {
     chainId: 11155111n, // Sepolia testnet
-    safeAddress: '0x4b68d95191F9bc9319BBD648895Dd758aa0F7bCF', // Your Safe address
+    safeAddress: '0x212f2EDFd22374dBef4f473ff709DBFC3BbD629f', // Your Safe address
     apiKey: process.env.SAFE_API_KEY || null, // Optional: Your Safe API key
     hsmSlot: 0, // HSM slot number
 };
 
 // Transaction hash to test confirmation
-const TEST_TRANSACTION_HASH = '0xa7872ddb2bc7d7cc097671bc31e2eee8d448e2be3d0310a01a8acf7ccb8211e8';
+const TEST_TRANSACTION_HASH = '0x1663c7e2066a91a3ffb02b6668f6b54298d3256fbc669b6d519ad20d8c84361a';
 
 async function testTransactionConfirmation() {
     console.log('🧪 Testing Safe Transaction Confirmation\n');
@@ -59,7 +59,7 @@ async function testTransactionConfirmation() {
         ethereumAddress = deriveEthereumAddress(ethereumKeys.publicKey);
         
         console.log(`✅ HSM initialized - Address: ${ethereumAddress}\n`);
-        return
+        
         
         // Step 2: Initialize Safe confirmer
         console.log('🏦 Step 2: Initializing Safe confirmer...');
