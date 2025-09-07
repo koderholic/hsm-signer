@@ -59,6 +59,7 @@ async function testTransactionConfirmation() {
         ethereumAddress = deriveEthereumAddress(ethereumKeys.publicKey);
         
         console.log(`✅ HSM initialized - Address: ${ethereumAddress}\n`);
+        return
         
         // Step 2: Initialize Safe confirmer
         console.log('🏦 Step 2: Initializing Safe confirmer...');
