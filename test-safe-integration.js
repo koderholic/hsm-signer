@@ -28,7 +28,7 @@ const TEST_CONFIG = {
 };
 
 // Transaction hash to test confirmation
-const TEST_TRANSACTION_HASH = '0x1663c7e2066a91a3ffb02b6668f6b54298d3256fbc669b6d519ad20d8c84361a';
+const TEST_TRANSACTION_HASH = '0x178222c8b9bd87ac83357dbf09f9ae82bad8fcb290758e0499b23b0820ab1c60';
 
 async function testTransactionConfirmation() {
     console.log('🧪 Testing Safe Transaction Confirmation\n');
@@ -182,7 +182,7 @@ function validateConfig() {
     
     const issues = [];
     
-    if (TEST_TRANSACTION_HASH === '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef') {
+    if (TEST_TRANSACTION_HASH === '0x178222c8b9bd87ac83357dbf09f9ae82bad8fcb290758e0499b23b0820ab1c60') {
         issues.push('Transaction hash is placeholder - update TEST_TRANSACTION_HASH with real hash');
     }
     
