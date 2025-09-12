@@ -27,11 +27,13 @@ export class SafeTransactionConfirmer {
         this.safeAddress = config.safeAddress;
         this.signerAddress = config.signerAddress;
         this.apiKey = config.apiKey || null;
+        this.txServiceUrl = config.txServiceUrl || null;
         
         // Initialize Safe API Kit
         this.apiKit = new SafeApiKit({
             chainId: this.chainId,
-            apiKey: this.apiKey
+            apiKey: this.apiKey,
+            txServiceUrl: this.txServiceUrl
         });
     }
 

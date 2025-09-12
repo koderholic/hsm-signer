@@ -24,8 +24,10 @@
   "dependencies": {
     "@ethersproject/rlp": "^5.8.0",
     "@safe-global/api-kit": "^4.0.0",
-    "@safe-global/protocol-kit": "^4.1.7",
+    "@safe-global/protocol-kit": "^6.1.1",
+    "@safe-global/safe-ethers-lib": "^1.9.4",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
     "ethereumjs-tx": "^2.1.2",
     "ethereumjs-util": "^7.1.5",
     "ethers": "^6.15.0",

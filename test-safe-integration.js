@@ -21,14 +21,15 @@ import graphene from 'graphene-pk11';
 
 // Test configuration - using Sepolia testnet
 const TEST_CONFIG = {
-    chainId: 11155111n, // Sepolia testnet
-    safeAddress: '0x212f2EDFd22374dBef4f473ff709DBFC3BbD629f', // Your Safe address
+    chainId: BigInt(process.env.CHAIN_ID), // Sepolia testnet
+    safeAddress: process.env.SAFE_ADDRESS, // Your Safe address
     apiKey: process.env.SAFE_API_KEY || null, // Optional: Your Safe API key
+    txServiceUrl: process.env.TX_SERVICE_URL, // Optional: Your Safe transaction service URL
     hsmSlot: 0, // HSM slot number
 };
 
 // Transaction hash to test confirmation
-const TEST_TRANSACTION_HASH = '0x178222c8b9bd87ac83357dbf09f9ae82bad8fcb290758e0499b23b0820ab1c60';
+const TEST_TRANSACTION_HASH = process.env.TEST_TRANSACTION_HASH;
 
 async function testTransactionConfirmation() {
     console.log('🧪 Testing Safe Transaction Confirmation\n');
@@ -59,7 +60,6 @@ async function testTransactionConfirmation() {
         ethereumAddress = deriveEthereumAddress(ethereumKeys.publicKey);
         
         console.log(`✅ HSM initialized - Address: ${ethereumAddress}\n`);
-        
         
         // Step 2: Initialize Safe confirmer
         console.log('🏦 Step 2: Initializing Safe confirmer...');
@@ -182,7 +182,7 @@ function validateConfig() {
     
     const issues = [];
     
-    if (TEST_TRANSACTION_HASH === '0x178222c8b9bd87ac83357dbf09f9ae82bad8fcb290758e0499b23b0820ab1c60') {
+    if (TEST_TRANSACTION_HASH === '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef') {
         issues.push('Transaction hash is placeholder - update TEST_TRANSACTION_HASH with real hash');
     }
     
